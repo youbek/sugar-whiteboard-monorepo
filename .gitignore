@@ -7,11 +7,16 @@ node_modules
 
 # testing
 coverage
+test-results
+playwright-report
+/.nyc_output
 
-# next.js
-.next/
+# build
 out/
 build
+dist
+dist-ssr
+*.local
 
 # misc
 .DS_Store
@@ -21,6 +26,10 @@ build
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+logs
+pnpm-debug.log*
+lerna-debug.log*
+*.log
 
 # local env files
 .env
@@ -32,5 +41,19 @@ yarn-error.log*
 # turbo
 .turbo
 
-# vercel
-.vercel
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.project
+.classpath
+.c9/
+.settings/
+*.launch
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-workspace

@@ -1,0 +1,26 @@
+{
+  "name": "sugar-whiteboard-core",
+  "version": "0.0.1",
+  "description": "Framework agnostic JavaScript whiteboard. The core component of sugarwhiteboard.com",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest test",
+    "build": "rm -r dist && tsc"
+  },
+  "keywords": [
+    "whiteboard",
+    "canvas",
+    "whiteboard",
+    "whiteboard",
+    "in",
+    "js"
+  ],
+  "author": "Yusufbek Alimatov",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "uid": "^2.0.2"
+  }
+}
