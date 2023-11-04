@@ -1,6 +1,8 @@
 import { uid } from "uid";
 import { Vector } from "../atoms";
 import { Viewport } from "../Viewport";
+import { CollisionEngine } from "../CollisionEngine";
+import { Subject } from "rxjs";
 
 export type DrawContext = {
   canvas: HTMLCanvasElement;
@@ -21,6 +23,13 @@ export abstract class Component {
   public zIndex: number = 0;
   public showDebugInfo: boolean = false;
 
+  public mouseOver = new Subject();
+  public mouseOut = new Subject();
+
+  constructor() {
+    this.id = uid();
+  }
+
   public get vertices(): Vector[] {
     return [];
   }
@@ -29,12 +38,14 @@ export abstract class Component {
     return [];
   }
 
-  constructor() {
-    this.id = uid();
+  public setPosition(position: Vector): void {
+    this.position = position;
   }
 
-  public onMouseOver(): void {}
-  public onMouseOut(): void {}
+  public isColliding(other: Component): boolean {
+    return CollisionEngine.checkCollision(this, other);
+  }
+
   public draw(context: DrawContext): void {
     if (this.showDebugInfo) {
       for (let i = 0; i < this.vertices.length; i++) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { Whiteboard, RectComponent, Vector, Color } from "sugar-whiteboard-core"
-  import { ref, computed, watchEffect, onMounted } from "vue";
+  import { ref, computed, watchEffect } from "vue";
 
   // trash code
   const redRectangle = new RectComponent();
@@ -8,24 +8,6 @@
 
   const canvasRef = ref<HTMLCanvasElement | null>(null);
   const whiteboard = computed(() => new Whiteboard());
-
-  onMounted(() => {
-    const interval =  setInterval(() => {
-      console.log("Checking for collision: ");
-      const isColliding = whiteboard.value.isColliding(redRectangle, greenRectangle);
-
-      if(isColliding) {
-        console.log("Collision detected!");
-        clearInterval(interval);
-      } else {
-        console.log("No collision detected!");
-      }
-    }, 100);
-
-    return () => {
-      clearInterval(interval);
-    }
-  })
 
   watchEffect(() => {
     if (canvasRef.value) {
@@ -41,6 +23,15 @@
 
       whiteboard.value.addComponent(redRectangle);
       whiteboard.value.addComponent(greenRectangle);
+
+      
+      redRectangle.mouseOver.subscribe(() => {
+        redRectangle.backgroundColor = new Color(0, 0, 255, 1);
+      });
+
+      redRectangle.mouseOut.subscribe(() => {
+        redRectangle.backgroundColor = new Color(255, 0, 0, 1);
+      });
     }
   });
 

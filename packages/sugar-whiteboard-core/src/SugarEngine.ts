@@ -1,12 +1,14 @@
 import { Viewport } from "./Viewport";
 import { Vector } from "./atoms";
 import { Component } from "./components";
+import { MouseComponent } from "./components/MouseComponent";
 
 export class SugarEngine {
   private viewport: Viewport;
   private canvas: HTMLCanvasElement;
   private components: Component[] = [];
   private renderingId: number | null = null;
+  private mouseComponent = new MouseComponent();
 
   constructor(viewport: Viewport, canvas: HTMLCanvasElement) {
     this.viewport = viewport;
@@ -14,11 +16,30 @@ export class SugarEngine {
     this.components = [];
     this.renderingId = null;
 
-    this.canvas.addEventListener("mousemove", this.handleMouseOnEvent);
+    this.canvas.addEventListener(
+      "mousemove",
+      this.handleMouseOnEvent.bind(this)
+    );
   }
 
   private handleMouseOnEvent(event: MouseEvent) {
-    const mousePosition = new Vector(event.clientX, event.clientY);
+    const rect = this.canvas.getBoundingClientRect();
+    const mousePosition = new Vector(
+      event.clientX - rect.left,
+      event.clientY - rect.top
+    );
+
+    this.mouseComponent?.setPosition(
+      this.viewport.calculateRenderPosition(mousePosition)
+    );
+
+    for (const component of this.components) {
+      if (component.isColliding(this.mouseComponent)) {
+        component.mouseOver.next(undefined);
+      } else {
+        component.mouseOut.next(undefined);
+      }
+    }
   }
 
   private draw(prevFrameEndTime: number) {
@@ -40,6 +61,13 @@ export class SugarEngine {
         deltaTime,
       });
     }
+
+    this.mouseComponent?.draw({
+      canvas: this.canvas,
+      ctx,
+      viewport: this.viewport,
+      deltaTime,
+    });
 
     this.scheduleDraw();
   }

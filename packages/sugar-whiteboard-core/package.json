@@ -21,6 +21,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@reactivex/rxjs": "^6.6.7",
+    "rxjs": "^7.8.1",
     "uid": "^2.0.2"
   }
 }

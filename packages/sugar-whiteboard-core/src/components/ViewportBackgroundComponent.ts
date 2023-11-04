@@ -1,6 +1,10 @@
 import { Component, DrawContext } from "./Component";
 
 export class ViewportBackgroundComponent extends Component {
+  public isColliding(other: Component): boolean {
+    return false;
+  }
+
   public onMouseOver(): void {}
 
   public onMouseOut(): void {}
