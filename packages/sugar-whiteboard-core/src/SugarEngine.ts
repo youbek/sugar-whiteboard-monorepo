@@ -19,9 +19,6 @@ export class SugarEngine {
 
   private handleMouseOnEvent(event: MouseEvent) {
     const mousePosition = new Vector(event.clientX, event.clientY);
-
-    for (let component of this.components) {
-    }
   }
 
   private draw(prevFrameEndTime: number) {

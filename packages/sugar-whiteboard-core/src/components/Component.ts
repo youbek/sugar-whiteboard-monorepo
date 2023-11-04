@@ -1,7 +1,6 @@
 import { uid } from "uid";
 import { Vector } from "../atoms";
-import { Color } from "src/atoms/Color";
-import { Viewport } from "src/Viewport";
+import { Viewport } from "../Viewport";
 
 export type DrawContext = {
   canvas: HTMLCanvasElement;
@@ -20,6 +19,15 @@ export abstract class Component {
   public opacity: number = 1;
   public visible: boolean = true;
   public zIndex: number = 0;
+  public showDebugInfo: boolean = false;
+
+  public get vertices(): Vector[] {
+    return [];
+  }
+
+  public get edges(): Vector[] {
+    return [];
+  }
 
   constructor() {
     this.id = uid();
@@ -27,5 +35,27 @@ export abstract class Component {
 
   public onMouseOver(): void {}
   public onMouseOut(): void {}
-  public abstract draw(context: DrawContext): void;
+  public draw(context: DrawContext): void {
+    if (this.showDebugInfo) {
+      for (let i = 0; i < this.vertices.length; i++) {
+        const start = this.vertices[i];
+        const end = this.vertices[(i + 1) % this.vertices.length];
+
+        const middle = new Vector((start.x + end.x) / 2, (start.y + end.y) / 2);
+
+        const edge = Vector.from([start, end]);
+
+        const perpendicular = edge.perpendicular;
+
+        context.ctx.beginPath();
+        context.ctx.arc(start.x, start.y, 10, 0, 2 * Math.PI);
+        context.ctx.moveTo(middle.x, middle.y);
+        context.ctx.lineTo(
+          middle.x + perpendicular.x,
+          middle.y + perpendicular.y
+        );
+        context.ctx.stroke();
+      }
+    }
+  }
 }

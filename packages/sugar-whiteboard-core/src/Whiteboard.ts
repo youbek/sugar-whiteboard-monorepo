@@ -1,4 +1,5 @@
 import { Vector } from "./atoms";
+import { CollisionEngine } from "./CollisionEngine";
 import { Component } from "./components";
 import { ViewportBackgroundComponent } from "./components/ViewportBackgroundComponent";
 import { SugarEngine } from "./SugarEngine";
@@ -16,6 +17,10 @@ export class Whiteboard {
 
   public removeComponent(component: Component) {
     this.engine?.removeComponent(component.id);
+  }
+
+  public isColliding(a: Component, b: Component): boolean {
+    return CollisionEngine.checkCollision(a, b) ?? false;
   }
 
   public init(canvas: HTMLCanvasElement) {
