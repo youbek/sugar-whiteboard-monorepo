@@ -1,4 +1,4 @@
-import { Color, Vector } from "../atoms";
+import { Color, Vector } from "../../atoms";
 import { Component, DrawContext } from "./Component";
 
 export class RectComponent extends Component {

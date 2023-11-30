@@ -1,7 +1,7 @@
 import { uid } from "uid";
-import { Vector } from "../atoms";
-import { Viewport } from "../Viewport";
-import { CollisionEngine } from "../CollisionEngine";
+import { Vector } from "../../atoms";
+import { Viewport } from "../rendering/Viewport";
+import { CollisionEngine } from "../events/CollisionEngine";
 import { Subject } from "rxjs";
 
 export type DrawContext = {

@@ -1,4 +1,4 @@
-import { Vector } from "../atoms";
+import { Vector } from "../../atoms";
 import { RectComponent } from "./RectComponent";
 import { DrawContext } from "./Component";
 

@@ -1,4 +1,4 @@
-import { Vector } from "./atoms";
+import { Vector } from "../../atoms";
 
 export class Viewport {
   public pivot = new Vector(0, 0); // top left corner of the viewport

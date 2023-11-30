@@ -1,5 +1,5 @@
-import { Projection, Vector } from "./atoms";
-import { Component } from "./components/Component";
+import { Projection } from "../../atoms";
+import { Component } from "../components";
 
 export class CollisionEngine {
   public static checkCollision(a: Component, b: Component): boolean {

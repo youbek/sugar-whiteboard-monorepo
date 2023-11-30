@@ -1,28 +1,54 @@
 import { Vector } from "./atoms";
-import { Component } from "./components";
-import { ViewportBackgroundComponent } from "./components/ViewportBackgroundComponent";
-import { SugarEngine } from "./SugarEngine";
-import { Viewport } from "./Viewport";
+import {
+  SugarEngine,
+  Viewport,
+  ViewportBackgroundComponent,
+  Component,
+  MouseComponent,
+  ComponentsTree,
+} from "./modules";
+import { EventManager } from "./modules/events/EventManager";
 
 export class Whiteboard {
   private viewport: Viewport | null = null;
   private engine: SugarEngine | null = null;
+  private eventManager: EventManager | null = null;
 
-  constructor() {}
+  private viewportBackgroundComponent: ViewportBackgroundComponent;
+  private mouseComponent: MouseComponent;
+  private componentsTree: ComponentsTree;
+
+  constructor() {
+    this.viewportBackgroundComponent = new ViewportBackgroundComponent();
+    this.mouseComponent = new MouseComponent();
+    this.componentsTree = new ComponentsTree([
+      this.viewportBackgroundComponent,
+      this.mouseComponent,
+    ]);
+  }
 
   public addComponent(component: Component) {
-    this.engine?.addComponent(component);
+    this.componentsTree?.addComponent(component);
   }
 
   public removeComponent(component: Component) {
-    this.engine?.removeComponent(component.id);
+    this.componentsTree?.removeComponent(component);
   }
 
   public init(canvas: HTMLCanvasElement) {
     this.viewport = new Viewport(new Vector(canvas.width, canvas.height));
-    this.engine = new SugarEngine(this.viewport, canvas);
+    this.engine = new SugarEngine();
+    this.eventManager = new EventManager(
+      canvas,
+      this.mouseComponent,
+      this.componentsTree,
+      this.viewport
+    );
 
-    this.engine.addComponent(new ViewportBackgroundComponent());
-    this.engine.scheduleDraw();
+    this.engine.scheduleDraw({
+      canvas,
+      components: this.componentsTree.getComponents(),
+      viewport: this.viewport,
+    });
   }
 }
