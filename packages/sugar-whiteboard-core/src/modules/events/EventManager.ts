@@ -32,6 +32,11 @@ export class EventManager {
       "mousemove",
       this.handleMouseOnEvent.bind(this)
     );
+
+    this.canvas.addEventListener(
+      "click",
+      this.handleMouseClickEvent.bind(this)
+    );
   }
 
   private handleMouseOnEvent(event: MouseEvent) {
@@ -50,6 +55,24 @@ export class EventManager {
         component.mouseOver.next(undefined);
       } else {
         component.mouseOut.next(undefined);
+      }
+    }
+  }
+
+  private handleMouseClickEvent(event: MouseEvent) {
+    const rect = this.canvas.getBoundingClientRect();
+    const mousePosition = new Vector(
+      event.clientX - rect.left,
+      event.clientY - rect.top
+    );
+
+    this.shadowMouseComponent?.setPosition(
+      this.viewport.calculateRenderPosition(mousePosition)
+    );
+
+    for (const component of this.componentsTree.getComponents()) {
+      if (component.isColliding(this.shadowMouseComponent)) {
+        component.mouseClick.next(undefined);
       }
     }
   }

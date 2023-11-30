@@ -4,11 +4,11 @@
  */
 
 import { Viewport } from "./Viewport";
-import { Component } from "../components";
+import { ComponentsTree } from "./ComponentsTree";
 
 type ScheduleDrawOptions = {
   canvas: HTMLCanvasElement;
-  components: Component[];
+  componentsTree: ComponentsTree;
   viewport: Viewport;
 };
 
@@ -25,7 +25,7 @@ export class SugarEngine {
 
   private draw({
     canvas,
-    components,
+    componentsTree,
     viewport,
     prevFrameEndTime,
   }: DrawOptions) {
@@ -39,7 +39,7 @@ export class SugarEngine {
     const currentTime = performance.now();
     const deltaTime = currentTime - prevFrameEndTime;
 
-    for (let component of components) {
+    for (let component of componentsTree.getComponents()) {
       component.draw({
         canvas: canvas,
         ctx,
@@ -50,7 +50,7 @@ export class SugarEngine {
 
     this.scheduleDraw({
       canvas,
-      components,
+      componentsTree,
       viewport,
     });
   }

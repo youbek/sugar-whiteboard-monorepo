@@ -47,7 +47,7 @@ export class Whiteboard {
 
     this.engine.scheduleDraw({
       canvas,
-      components: this.componentsTree.getComponents(),
+      componentsTree: this.componentsTree,
       viewport: this.viewport,
     });
   }

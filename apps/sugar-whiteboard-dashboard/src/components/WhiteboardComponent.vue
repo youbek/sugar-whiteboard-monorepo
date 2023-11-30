@@ -32,6 +32,10 @@
       redRectangle.mouseOut.subscribe(() => {
         redRectangle.backgroundColor = new Color(255, 0, 0, 1);
       });
+
+      redRectangle.mouseClick.subscribe(() => {
+        whiteboard.value.removeComponent(redRectangle);
+      });
     }
   });
 

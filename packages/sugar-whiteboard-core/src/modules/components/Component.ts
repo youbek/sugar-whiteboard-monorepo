@@ -25,6 +25,7 @@ export abstract class Component {
 
   public mouseOver = new Subject();
   public mouseOut = new Subject();
+  public mouseClick = new Subject();
 
   constructor() {
     this.id = uid();
