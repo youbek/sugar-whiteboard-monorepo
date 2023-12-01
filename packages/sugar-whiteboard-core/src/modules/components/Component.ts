@@ -4,11 +4,22 @@ import { Viewport } from "../rendering/Viewport";
 import { CollisionEngine } from "../events/CollisionEngine";
 import { Subject } from "rxjs";
 
+type MouseDragData = {
+  mouseX: number;
+  mouseY: number;
+  mouseXRelativeToViewport: number;
+  mouseYRelativeToViewport: number;
+};
+
 export type DrawContext = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   viewport: Viewport;
   deltaTime: number;
+};
+
+export type ComponentConfiguration = {
+  isDraggable: boolean;
 };
 
 export abstract class Component {
@@ -22,13 +33,25 @@ export abstract class Component {
   public visible: boolean = true;
   public zIndex: number = 0;
   public showDebugInfo: boolean = false;
+  public isDraggable = false;
 
   public mouseOver = new Subject();
   public mouseOut = new Subject();
   public mouseClick = new Subject();
+  public mouseDragStart = new Subject<MouseDragData>();
+  public mouseDrag = new Subject<MouseDragData>();
+  public mouseDragEnd = new Subject<MouseDragData>();
 
-  constructor() {
+  constructor(conf?: ComponentConfiguration) {
     this.id = uid();
+
+    if (conf) {
+      this.isDraggable = conf.isDraggable;
+    }
+
+    if (this.isDraggable) {
+      this.handleDrag();
+    }
   }
 
   public get vertices(): Vector[] {
@@ -69,5 +92,27 @@ export abstract class Component {
         context.ctx.stroke();
       }
     }
+  }
+
+  protected handleDrag() {
+    let offset = new Vector(0, 0);
+
+    this.mouseDragStart.subscribe(
+      ({ mouseXRelativeToViewport, mouseYRelativeToViewport }) => {
+        offset = new Vector(
+          mouseXRelativeToViewport - this.position.x,
+          mouseYRelativeToViewport - this.position.y
+        );
+      }
+    );
+
+    this.mouseDrag.subscribe(
+      ({ mouseXRelativeToViewport, mouseYRelativeToViewport }) => {
+        this.position = new Vector(
+          mouseXRelativeToViewport - offset.x,
+          mouseYRelativeToViewport - offset.y
+        );
+      }
+    );
   }
 }

@@ -23,7 +23,6 @@ export class Whiteboard {
     this.mouseComponent = new MouseComponent();
     this.componentsTree = new ComponentsTree([
       this.viewportBackgroundComponent,
-      this.mouseComponent,
     ]);
   }
 

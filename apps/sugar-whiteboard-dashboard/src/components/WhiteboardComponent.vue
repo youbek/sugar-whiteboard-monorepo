@@ -34,7 +34,7 @@
       });
 
       redRectangle.mouseClick.subscribe(() => {
-        whiteboard.value.removeComponent(redRectangle);
+        alert("YOU CLICKED ME!");
       });
     }
   });
