@@ -4,6 +4,7 @@ import { Component } from "../components";
 export class CollisionEngine {
   public static checkCollision(a: Component, b: Component): boolean {
     // Possible improvement: not all edges need to be checked for SAT collision
+
     const axes1 = a.edges.map((edge) => edge.perpendicular);
 
     for (const axis of axes1) {

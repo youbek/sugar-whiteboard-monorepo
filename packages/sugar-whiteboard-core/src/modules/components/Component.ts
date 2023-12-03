@@ -25,6 +25,7 @@ export type ComponentConfiguration = {
 export abstract class Component {
   public id: string;
   public position: Vector = new Vector(0, 0); // world position
+  public lastRenderPosition: Vector = new Vector(0, 0); // drawn position relative to last viewport
   public size: Vector = new Vector(0, 0); // in world size (x => width, y => height)
   public scale: number = 1;
   public rotation: number = 0; // radians
@@ -44,6 +45,7 @@ export abstract class Component {
 
   constructor(conf?: ComponentConfiguration) {
     this.id = uid();
+    this.lastRenderPosition = this.position;
 
     if (conf) {
       this.isDraggable = conf.isDraggable;

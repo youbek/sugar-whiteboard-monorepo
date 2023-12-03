@@ -41,12 +41,13 @@ export class EventManager {
         event.clientY - rect.top
       );
 
-      this.shadowMouseComponent?.setPosition(
-        this.viewport.calculateRenderPosition(mousePosition)
-      );
+      this.shadowMouseComponent?.setPosition(mousePosition);
 
       for (const component of this.componentsTree.getComponents()) {
-        if (component.isColliding(this.shadowMouseComponent)) {
+        if (
+          component !== this.shadowMouseComponent &&
+          component.isColliding(this.shadowMouseComponent)
+        ) {
           component.mouseClick.next(undefined);
         }
       }
@@ -61,12 +62,13 @@ export class EventManager {
         event.clientY - rect.top
       );
 
-      this.shadowMouseComponent?.setPosition(
-        this.viewport.calculateRenderPosition(mousePosition)
-      );
+      this.shadowMouseComponent?.setPosition(mousePosition);
 
       for (const component of this.componentsTree.getComponents()) {
-        if (component.isColliding(this.shadowMouseComponent)) {
+        if (
+          component !== this.shadowMouseComponent &&
+          component.isColliding(this.shadowMouseComponent)
+        ) {
           component.mouseOver.next(undefined);
         } else {
           component.mouseOut.next(undefined);
@@ -77,7 +79,7 @@ export class EventManager {
 
   private checkForMouseDragEvents() {
     let prevWaitTimerId: any = undefined;
-    let draggingComponent: Component | undefined;
+    let draggingComponent: Component | Viewport | undefined;
     let cursorStyle = this.canvas.style.cursor;
 
     this.canvas.addEventListener("mousedown", (event) => {
@@ -95,24 +97,24 @@ export class EventManager {
         const mouseRenderPosition =
           this.viewport.calculateRenderPosition(mousePosition);
 
-        this.shadowMouseComponent?.setPosition(mouseRenderPosition);
+        draggingComponent =
+          this.componentsTree
+            .getComponents()
+            .find(
+              (component) =>
+                component !== this.shadowMouseComponent &&
+                component.isDraggable &&
+                component.isColliding(this.shadowMouseComponent)
+            ) || this.viewport;
 
-        draggingComponent = this.componentsTree
-          .getComponents()
-          .find((component) =>
-            component.isColliding(this.shadowMouseComponent)
-          );
-
-        draggingComponent?.mouseDragStart.next({
+        draggingComponent.mouseDragStart.next({
           mouseX: mousePosition.x,
           mouseY: mousePosition.y,
           mouseXRelativeToViewport: mouseRenderPosition.x,
           mouseYRelativeToViewport: mouseRenderPosition.y,
         });
 
-        if (draggingComponent) {
-          this.canvas.style.cursor = "grab";
-        }
+        this.canvas.style.cursor = "grabbing";
       }, 100);
     });
 
@@ -153,6 +155,7 @@ export class EventManager {
         });
 
         draggingComponent = undefined;
+        clearTimeout(prevWaitTimerId);
 
         this.canvas.style.cursor = cursorStyle;
       }

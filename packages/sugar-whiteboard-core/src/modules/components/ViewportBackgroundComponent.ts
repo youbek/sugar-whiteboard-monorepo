@@ -1,6 +1,12 @@
 import { Component, DrawContext } from "./Component";
 
 export class ViewportBackgroundComponent extends Component {
+  constructor() {
+    super({
+      isDraggable: false,
+    });
+  }
+
   public isColliding(other: Component): boolean {
     return false;
   }
