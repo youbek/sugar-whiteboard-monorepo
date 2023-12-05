@@ -79,7 +79,7 @@ export class Viewport {
   }
 
   public get bounds(): ViewportBounds {
-    const maxSize = new Vector(1200, 1200); // 2x of 4K
+    const maxSize = new Vector(6912, 4468); // 2x of 4K
 
     return {
       left: -maxSize.x,
