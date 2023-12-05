@@ -1,14 +1,22 @@
-import { Subject } from "rxjs";
+import { Subject, max } from "rxjs";
 import { Vector } from "../../atoms";
 
 type MouseDragData = {
   mouseX: number;
   mouseY: number;
 };
+
+type ViewportBounds = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
 export class Viewport {
   public pivot = new Vector(0, 0); // top left corner of the viewport
   public position: Vector;
-  public size: Vector;
+  public size: Vector; // canvas size
+  public maxSize = new Vector(13824, 8936);
   public zoomLevel: number;
 
   public mouseDragStart = new Subject<MouseDragData>();
@@ -21,6 +29,15 @@ export class Viewport {
     this.zoomLevel = 1;
 
     this.handleDrag();
+  }
+
+  private setPosition(newPosition: Vector) {
+    const bounds = this.bounds;
+    this.position = Vector.clamp(
+      newPosition,
+      new Vector(bounds.left, bounds.top),
+      new Vector(bounds.right, bounds.bottom)
+    );
   }
 
   private handleDrag() {
@@ -38,9 +55,11 @@ export class Viewport {
         mouseY - mouseStart.y
       );
 
-      this.position = new Vector(
-        startPosition.x - moveChange.x,
-        startPosition.y - moveChange.y
+      this.setPosition(
+        new Vector(
+          startPosition.x - moveChange.x,
+          startPosition.y - moveChange.y
+        )
       );
     });
 
@@ -50,11 +69,24 @@ export class Viewport {
         mouseY - mouseStart.y
       );
 
-      this.position = new Vector(
-        startPosition.x - moveChange.x,
-        startPosition.y - moveChange.y
+      this.setPosition(
+        new Vector(
+          startPosition.x - moveChange.x,
+          startPosition.y - moveChange.y
+        )
       );
     });
+  }
+
+  public get bounds(): ViewportBounds {
+    const maxSize = new Vector(1200, 1200); // 2x of 4K
+
+    return {
+      left: -maxSize.x,
+      top: -maxSize.y,
+      right: maxSize.x,
+      bottom: maxSize.y,
+    };
   }
 
   public setZoomLevel = (zoomLevel: number) => {

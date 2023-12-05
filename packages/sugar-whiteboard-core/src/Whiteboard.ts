@@ -23,8 +23,19 @@ export class Whiteboard {
     this.mouseComponent = new MouseComponent();
     this.componentsTree = new ComponentsTree([
       this.viewportBackgroundComponent,
-      this.mouseComponent,
     ]);
+  }
+
+  private fixCanvasBlur(canvas: HTMLCanvasElement) {
+    canvas.style.width = `${canvas.width}px`;
+    canvas.style.height = `${canvas.height}px`;
+    const scale = window.devicePixelRatio;
+
+    canvas.width = Math.floor(canvas.width * scale);
+    canvas.height = Math.floor(canvas.height * scale);
+
+    const ctx = canvas.getContext("2d");
+    ctx?.scale(scale, scale);
   }
 
   public addComponent(component: Component) {
@@ -36,6 +47,8 @@ export class Whiteboard {
   }
 
   public init(canvas: HTMLCanvasElement) {
+    this.fixCanvasBlur(canvas);
+
     this.viewport = new Viewport(new Vector(canvas.width, canvas.height));
     this.engine = new SugarEngine();
     this.eventManager = new EventManager(

@@ -1,3 +1,4 @@
+import _, { max, min } from "lodash";
 export class Vector {
   public x: number;
   public y: number;
@@ -24,5 +25,12 @@ export class Vector {
 
   static dotProduct(a: Vector, b: Vector): number {
     return a.x * b.x + a.y * b.y;
+  }
+
+  static clamp(vector: Vector, minVector: Vector, maxVector: Vector) {
+    return new Vector(
+      _.clamp(vector.x, minVector.x, maxVector.x),
+      _.clamp(vector.y, minVector.y, maxVector.y)
+    );
   }
 }
