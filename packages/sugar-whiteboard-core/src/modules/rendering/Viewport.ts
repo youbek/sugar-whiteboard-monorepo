@@ -1,10 +1,4 @@
-import { Subject } from "rxjs";
 import { Vector } from "../../atoms";
-
-type MouseDragData = {
-  mouseX: number;
-  mouseY: number;
-};
 
 type ViewportBounds = {
   left: number;
@@ -18,10 +12,6 @@ export class Viewport {
   public size: Vector; // canvas size
   public maxSize = new Vector(13824, 8936);
   public zoomLevel: number;
-
-  public mouseDragStart = new Subject<MouseDragData>();
-  public mouseDrag = new Subject<MouseDragData>();
-  public mouseDragEnd = new Subject<MouseDragData>();
 
   private static currentViewport: Viewport;
 
