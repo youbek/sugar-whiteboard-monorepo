@@ -8,7 +8,7 @@ export function Draggable() {
   return function <T extends Constructor<Component>>(BaseComponent: T) {
     return class DraggableComponent extends BaseComponent {
       constructor(...args: any[]) {
-        super(...(args as []));
+        super(...args);
       }
 
       public init() {
@@ -48,6 +48,10 @@ export function Draggable() {
           }
 
           prevWaitTimerId = setTimeout(() => {
+            isDragging = mouseComponent.isColliding(this);
+
+            if (!isDragging) return;
+
             const rect = canvas.getBoundingClientRect();
             const mousePosition = new Vector(
               event.clientX - rect.left,
@@ -56,10 +60,6 @@ export function Draggable() {
 
             const mouseRenderPosition =
               viewport.calculateRenderPosition(mousePosition);
-
-            isDragging = mouseComponent.isColliding(this);
-
-            if (!isDragging) return;
 
             offset = new Vector(
               mouseRenderPosition.x - this.getPosition().x,

@@ -42,6 +42,7 @@ export class Whiteboard {
 
   public init(canvas: HTMLCanvasElement) {
     this.fixCanvasBlur(canvas);
+    canvas.style.userSelect = "none";
 
     this.viewport = new Viewport(new Vector(canvas.width, canvas.height));
 

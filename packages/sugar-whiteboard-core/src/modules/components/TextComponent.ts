@@ -26,12 +26,6 @@ export class TextComponent extends RectComponent {
 
   private editModePadding = 5;
 
-  constructor() {
-    super();
-
-    this.mode = ComponentMode.EDIT;
-  }
-
   private calculateTextMetrics(context: DrawContext) {
     this.textMetrics = context.ctx.measureText(
       this.textContent || this.placeholderText
@@ -106,8 +100,6 @@ export class TextComponent extends RectComponent {
   }
 
   public draw(context: DrawContext): void {
-    console.log("TEXT CONTENT: ", this.textContent);
-
     if (!this.textContent) {
       this.drawPlaceholder(context);
     } else {

@@ -49,15 +49,15 @@ export function Pannable() {
           }
 
           prevWaitTimerId = setTimeout(() => {
+            isPanning = mouseComponent.isColliding(this);
+
+            if (!isPanning) return;
+
             const rect = canvas.getBoundingClientRect();
             const mousePosition = new Vector(
               event.clientX - rect.left,
               event.clientY - rect.top
             );
-
-            isPanning = mouseComponent.isColliding(this);
-
-            if (!isPanning) return;
 
             mouseStart = new Vector(mousePosition.x, mousePosition.y);
             startPosition = this.getPosition();
