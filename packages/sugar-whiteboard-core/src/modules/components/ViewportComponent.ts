@@ -1,13 +1,33 @@
 import { Vector } from "../../atoms";
+import { Pannable } from "../decorators";
+import { Viewport } from "../rendering";
 import { Component, DrawContext } from "./Component";
 
-export class ViewportBackgroundComponent extends Component {
+@Pannable()
+export class ViewportComponent extends Component {
+  public zIndex = Number.MIN_SAFE_INTEGER;
   public gridSize = new Vector(100, 100);
 
-  constructor() {
-    super({
-      isDraggable: false,
-    });
+  public get vertices(): Vector[] {
+    const viewport = Viewport.getCurrentViewport();
+    const position = viewport.calculateRenderPosition(this.getPosition());
+    const size = this.getSize();
+
+    return [
+      new Vector(position.x, position.y),
+      new Vector(position.x + size.x, position.y),
+      new Vector(position.x + size.x, position.y + size.y),
+      new Vector(position.x, position.y + size.y),
+    ];
+  }
+
+  public get edges(): Vector[] {
+    return [
+      Vector.from([this.vertices[0], this.vertices[1]]),
+      Vector.from([this.vertices[1], this.vertices[2]]),
+      Vector.from([this.vertices[2], this.vertices[3]]),
+      Vector.from([this.vertices[3], this.vertices[0]]),
+    ];
   }
 
   private drawBackground(context: DrawContext) {
@@ -52,13 +72,22 @@ export class ViewportBackgroundComponent extends Component {
     context.ctx.strokeStyle = oldStrokeStyle;
   }
 
-  public isColliding(other: Component): boolean {
-    return false;
+  public getSize() {
+    const viewport = Viewport.getCurrentViewport();
+
+    return viewport.size;
   }
 
-  public onMouseOver(): void {}
+  public getPosition() {
+    const viewport = Viewport.getCurrentViewport();
 
-  public onMouseOut(): void {}
+    return viewport.getPosition();
+  }
+
+  public setPosition(position: Vector): void {
+    const viewport = Viewport.getCurrentViewport();
+    viewport.setPosition(position);
+  }
 
   public draw(context: DrawContext): void {
     this.drawBackground(context);

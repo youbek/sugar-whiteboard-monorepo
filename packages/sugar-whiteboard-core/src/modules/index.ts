@@ -1,3 +1,3 @@
 export * from "./components";
-export * from "./events";
+export * from "./physics";
 export * from "./rendering";

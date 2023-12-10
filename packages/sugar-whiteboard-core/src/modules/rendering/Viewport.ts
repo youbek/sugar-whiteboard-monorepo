@@ -1,4 +1,4 @@
-import { Subject, max } from "rxjs";
+import { Subject } from "rxjs";
 import { Vector } from "../../atoms";
 
 type MouseDragData = {
@@ -23,59 +23,18 @@ export class Viewport {
   public mouseDrag = new Subject<MouseDragData>();
   public mouseDragEnd = new Subject<MouseDragData>();
 
+  private static currentViewport: Viewport;
+
   constructor(size: Vector) {
+    if (Viewport.currentViewport) {
+      throw new Error("Cannot initialize another Viewport, it already exists.");
+    }
+
+    Viewport.currentViewport = this;
+
     this.position = new Vector(0, 0);
     this.size = size;
     this.zoomLevel = 1;
-
-    this.handleDrag();
-  }
-
-  private setPosition(newPosition: Vector) {
-    const bounds = this.bounds;
-    this.position = Vector.clamp(
-      newPosition,
-      new Vector(bounds.left, bounds.top),
-      new Vector(bounds.right, bounds.bottom)
-    );
-  }
-
-  private handleDrag() {
-    let mouseStart = new Vector(0, 0);
-    let startPosition = this.position;
-
-    this.mouseDragStart.subscribe(({ mouseX, mouseY }) => {
-      mouseStart = new Vector(mouseX, mouseY);
-      startPosition = this.position;
-    });
-
-    this.mouseDrag.subscribe(({ mouseX, mouseY }) => {
-      const moveChange = new Vector(
-        mouseX - mouseStart.x,
-        mouseY - mouseStart.y
-      );
-
-      this.setPosition(
-        new Vector(
-          startPosition.x - moveChange.x,
-          startPosition.y - moveChange.y
-        )
-      );
-    });
-
-    this.mouseDragEnd.subscribe(({ mouseX, mouseY }) => {
-      const moveChange = new Vector(
-        mouseX - mouseStart.x,
-        mouseY - mouseStart.y
-      );
-
-      this.setPosition(
-        new Vector(
-          startPosition.x - moveChange.x,
-          startPosition.y - moveChange.y
-        )
-      );
-    });
   }
 
   public get bounds(): ViewportBounds {
@@ -89,6 +48,19 @@ export class Viewport {
     };
   }
 
+  public getPosition() {
+    return this.position;
+  }
+
+  public setPosition(newPosition: Vector) {
+    const bounds = this.bounds;
+    this.position = Vector.clamp(
+      newPosition,
+      new Vector(bounds.left, bounds.top),
+      new Vector(bounds.right, bounds.bottom)
+    );
+  }
+
   public setZoomLevel = (zoomLevel: number) => {
     this.zoomLevel = zoomLevel;
   };
@@ -99,4 +71,8 @@ export class Viewport {
       position.y - this.position.y
     );
   };
+
+  public static getCurrentViewport() {
+    return Viewport.currentViewport;
+  }
 }

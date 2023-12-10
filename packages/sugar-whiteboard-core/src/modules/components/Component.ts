@@ -1,25 +1,19 @@
 import { uid } from "uid";
 import { Vector } from "../../atoms";
 import { Viewport } from "../rendering/Viewport";
-import { CollisionEngine } from "../events/CollisionEngine";
-import { Subject } from "rxjs";
+import { CollisionEngine } from "../physics/CollisionEngine";
 
-type MouseDragData = {
-  mouseX: number;
-  mouseY: number;
-  mouseXRelativeToViewport: number;
-  mouseYRelativeToViewport: number;
-};
+export enum ComponentMode {
+  VIEW = "VIEW",
+  EDIT = "EDIT",
+  SELECT = "SELECT",
+}
 
 export type DrawContext = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   viewport: Viewport;
   deltaTime: number;
-};
-
-export type ComponentConfiguration = {
-  isDraggable: boolean;
 };
 
 export abstract class Component {
@@ -34,26 +28,15 @@ export abstract class Component {
   public visible: boolean = true;
   public zIndex: number = 0;
   public showDebugInfo: boolean = false;
-  public isDraggable = false;
 
-  public mouseOver = new Subject();
-  public mouseOut = new Subject();
-  public mouseClick = new Subject();
-  public mouseDragStart = new Subject<MouseDragData>();
-  public mouseDrag = new Subject<MouseDragData>();
-  public mouseDragEnd = new Subject<MouseDragData>();
+  public mode: ComponentMode = ComponentMode.VIEW;
 
-  constructor(conf?: ComponentConfiguration) {
+  constructor() {
     this.id = uid();
+  }
+
+  public init() {
     this.lastRenderPosition = this.position;
-
-    if (conf) {
-      this.isDraggable = conf.isDraggable;
-    }
-
-    if (this.isDraggable) {
-      this.handleDrag();
-    }
   }
 
   public get vertices(): Vector[] {
@@ -64,7 +47,11 @@ export abstract class Component {
     return [];
   }
 
-  public setPosition(position: Vector): void {
+  public getPosition() {
+    return this.position;
+  }
+
+  public setPosition(position: Vector) {
     this.position = position;
   }
 
@@ -94,27 +81,5 @@ export abstract class Component {
         context.ctx.stroke();
       }
     }
-  }
-
-  protected handleDrag() {
-    let offset = new Vector(0, 0);
-
-    this.mouseDragStart.subscribe(
-      ({ mouseXRelativeToViewport, mouseYRelativeToViewport }) => {
-        offset = new Vector(
-          mouseXRelativeToViewport - this.position.x,
-          mouseYRelativeToViewport - this.position.y
-        );
-      }
-    );
-
-    this.mouseDrag.subscribe(
-      ({ mouseXRelativeToViewport, mouseYRelativeToViewport }) => {
-        this.position = new Vector(
-          mouseXRelativeToViewport - offset.x,
-          mouseYRelativeToViewport - offset.y
-        );
-      }
-    );
   }
 }

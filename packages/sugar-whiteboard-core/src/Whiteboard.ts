@@ -2,28 +2,21 @@ import { Vector } from "./atoms";
 import {
   SugarEngine,
   Viewport,
-  ViewportBackgroundComponent,
+  ViewportComponent,
   Component,
   MouseComponent,
   ComponentsTree,
 } from "./modules";
-import { EventManager } from "./modules/events/EventManager";
 
 export class Whiteboard {
   private viewport: Viewport | null = null;
   private engine: SugarEngine | null = null;
-  private eventManager: EventManager | null = null;
-
-  private viewportBackgroundComponent: ViewportBackgroundComponent;
-  private mouseComponent: MouseComponent;
+  private viewportComponent: ViewportComponent | null = null;
+  private mouseComponent: MouseComponent | null = null;
   private componentsTree: ComponentsTree;
 
   constructor() {
-    this.viewportBackgroundComponent = new ViewportBackgroundComponent();
-    this.mouseComponent = new MouseComponent();
-    this.componentsTree = new ComponentsTree([
-      this.viewportBackgroundComponent,
-    ]);
+    this.componentsTree = new ComponentsTree();
   }
 
   private fixCanvasBlur(canvas: HTMLCanvasElement) {
@@ -39,6 +32,7 @@ export class Whiteboard {
   }
 
   public addComponent(component: Component) {
+    component.init();
     this.componentsTree?.addComponent(component);
   }
 
@@ -50,13 +44,14 @@ export class Whiteboard {
     this.fixCanvasBlur(canvas);
 
     this.viewport = new Viewport(new Vector(canvas.width, canvas.height));
+
+    this.viewportComponent = new ViewportComponent();
+    this.mouseComponent = new MouseComponent();
+
+    this.addComponent(this.viewportComponent);
+    this.addComponent(this.mouseComponent);
+
     this.engine = new SugarEngine();
-    this.eventManager = new EventManager(
-      canvas,
-      this.mouseComponent,
-      this.componentsTree,
-      this.viewport
-    );
 
     this.engine.scheduleDraw({
       canvas,
