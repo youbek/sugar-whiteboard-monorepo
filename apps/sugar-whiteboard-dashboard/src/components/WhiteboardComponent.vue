@@ -33,7 +33,10 @@
     }
   });
   
-  function addText() {
+  function addText(event: any) {
+    event.preventDefault();
+    event.target.blur();
+
     const textComponent = new TextComponent();
     whiteboard.value.addComponent(textComponent);
   }

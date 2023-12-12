@@ -1,12 +1,21 @@
-import { Vector } from "src/atoms";
+import _ from "lodash";
+import { Color, Vector } from "../../atoms";
 import { Constructor } from "../../utils/type";
-import { Component, ComponentMode, MouseComponent } from "../components";
+import {
+  TextComponent,
+  ComponentMode,
+  MouseComponent,
+  DrawContext,
+} from "../components";
 import { Viewport } from "../rendering";
 
 export function TextContentEditable() {
-  return function <T extends Constructor<Component>>(Base: T) {
+  return function <T extends Constructor<TextComponent>>(Base: T) {
     return class TextContentEditableClass extends Base {
-      public textContent = "";
+      public cursorIndex = 0;
+      public cursorColor = new Color(0, 0, 0, 1);
+      public editBorderColor = new Color(66, 195, 255, 1);
+      public editModePadding = 5;
 
       constructor(...args: any[]) {
         super(...args);
@@ -60,6 +69,65 @@ export function TextContentEditable() {
         this.mode = ComponentMode.EDIT;
       }
 
+      public drawEditBorder(context: DrawContext) {
+        const textMetrics = context.ctx.measureText(
+          this.textContent || this.placeholderText || "Dummy Text"
+        );
+        const borderSize = new Vector(
+          textMetrics.width,
+          textMetrics.fontBoundingBoxAscent + textMetrics.fontBoundingBoxDescent
+        );
+
+        const renderPosition = context.viewport.calculateRenderPosition(
+          this.position
+        );
+
+        context.ctx.strokeStyle = this.editBorderColor.toString();
+        context.ctx.strokeRect(
+          renderPosition.x - this.editModePadding,
+          renderPosition.y -
+            textMetrics.fontBoundingBoxAscent -
+            this.editModePadding,
+          borderSize.x + this.editModePadding,
+          borderSize.y + this.editModePadding
+        );
+
+        this.size = borderSize;
+      }
+
+      public drawCursor(context: DrawContext) {
+        const textToCursor = (this.textContent || "").substring(
+          0,
+          this.cursorIndex
+        );
+
+        const textMetrics = context.ctx.measureText(textToCursor);
+        const position = new Vector(
+          this.position.x + textMetrics.width + this.editModePadding,
+          this.position.y - textMetrics.fontBoundingBoxAscent
+        );
+
+        context.ctx.fillStyle = this.cursorColor.toString();
+        const renderPosition =
+          context.viewport.calculateRenderPosition(position);
+
+        context.ctx.fillRect(
+          renderPosition.x - this.editModePadding,
+          renderPosition.y - this.editModePadding,
+          2,
+          this.size.y + this.editModePadding
+        );
+      }
+
+      public draw(context: DrawContext): void {
+        super.draw(context);
+
+        if (this.mode === ComponentMode.EDIT) {
+          this.drawEditBorder(context);
+          this.drawCursor(context);
+        }
+      }
+
       public handleTextEdit() {
         const viewport = Viewport.getCurrentViewport();
 
@@ -77,6 +145,20 @@ export function TextContentEditable() {
             );
           } else if (event.key === "Space") {
             this.textContent += " ";
+          } else if (event.key === "ArrowLeft") {
+            this.cursorIndex = _.clamp(
+              this.cursorIndex - 1,
+              0,
+              this.textContent.length
+            );
+          } else if (event.key === "ArrowRight") {
+            this.cursorIndex = _.clamp(
+              this.cursorIndex + 1,
+              0,
+              this.textContent.length
+            );
+          } else if (event.key === "Enter" || event.key === "Return") {
+            this.mode = ComponentMode.VIEW;
           } else if (
             event.key !== "Shift" &&
             !event.altKey &&
@@ -84,6 +166,7 @@ export function TextContentEditable() {
             !event.metaKey
           ) {
             this.textContent += event.key;
+            this.cursorIndex++;
           }
         });
       }
