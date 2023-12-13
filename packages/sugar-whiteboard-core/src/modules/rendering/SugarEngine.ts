@@ -37,7 +37,7 @@ export class SugarEngine {
     }
 
     const currentTime = performance.now();
-    const deltaTime = currentTime - prevFrameEndTime;
+    const deltaTime = (currentTime - prevFrameEndTime) / 100;
 
     for (let component of componentsTree.getComponents()) {
       component.draw({

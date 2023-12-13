@@ -17,6 +17,10 @@ export function TextContentEditable() {
       public editBorderColor = new Color(66, 195, 255, 1);
       public editModePadding = 5;
 
+      public blinkDelay = 1; // 1 second
+      public blinkTimer = 0;
+      public shouldDrawCursor = true;
+
       constructor(...args: any[]) {
         super(...args);
       }
@@ -96,27 +100,36 @@ export function TextContentEditable() {
       }
 
       public drawCursor(context: DrawContext) {
-        const textToCursor = (this.textContent || "").substring(
-          0,
-          this.cursorIndex
-        );
+        this.blinkTimer += context.deltaTime;
 
-        const textMetrics = context.ctx.measureText(textToCursor);
-        const position = new Vector(
-          this.position.x + textMetrics.width + this.editModePadding,
-          this.position.y - textMetrics.fontBoundingBoxAscent
-        );
+        if (this.blinkTimer > this.blinkDelay) {
+          this.blinkTimer = 0;
+          this.shouldDrawCursor = !this.shouldDrawCursor;
+        }
 
-        context.ctx.fillStyle = this.cursorColor.toString();
-        const renderPosition =
-          context.viewport.calculateRenderPosition(position);
+        if (this.shouldDrawCursor) {
+          const textToCursor = (this.textContent || "").substring(
+            0,
+            this.cursorIndex
+          );
 
-        context.ctx.fillRect(
-          renderPosition.x - this.editModePadding,
-          renderPosition.y - this.editModePadding,
-          2,
-          this.size.y + this.editModePadding
-        );
+          const textMetrics = context.ctx.measureText(textToCursor);
+          const position = new Vector(
+            this.position.x + textMetrics.width + this.editModePadding,
+            this.position.y - textMetrics.fontBoundingBoxAscent
+          );
+
+          context.ctx.fillStyle = this.cursorColor.toString();
+          const renderPosition =
+            context.viewport.calculateRenderPosition(position);
+
+          context.ctx.fillRect(
+            renderPosition.x - this.editModePadding,
+            renderPosition.y - this.editModePadding,
+            2,
+            this.size.y + this.editModePadding
+          );
+        }
       }
 
       public draw(context: DrawContext): void {
@@ -125,6 +138,8 @@ export function TextContentEditable() {
         if (this.mode === ComponentMode.EDIT) {
           this.drawEditBorder(context);
           this.drawCursor(context);
+        } else {
+          this.blinkTimer = 0;
         }
       }
 
