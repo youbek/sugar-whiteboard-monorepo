@@ -41,6 +41,9 @@ export class Whiteboard {
   }
 
   public init(canvas: HTMLCanvasElement) {
+    canvas.width = window.innerWidth; // make this customizable by the client code
+    canvas.height = window.innerHeight;
+
     this.fixCanvasBlur(canvas);
     canvas.style.userSelect = "none";
 

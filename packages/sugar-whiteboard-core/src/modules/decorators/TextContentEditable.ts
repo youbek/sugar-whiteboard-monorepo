@@ -12,12 +12,12 @@ import { Viewport } from "../rendering";
 export function TextContentEditable() {
   return function <T extends Constructor<TextComponent>>(Base: T) {
     return class TextContentEditableClass extends Base {
-      public cursorIndex = 0;
-      public cursorColor = new Color(0, 0, 0, 1);
+      public caretIndex = 0;
+      public caretColor = new Color(0, 0, 0, 1);
       public editBorderColor = new Color(66, 195, 255, 1);
       public editModePadding = 5;
 
-      public blinkDelay = 1; // 1 second
+      public blinkDelay = 2; // 2 second
       public blinkTimer = 0;
       public shouldDrawCursor = true;
 
@@ -30,6 +30,29 @@ export function TextContentEditable() {
 
         this.handleFocus();
         this.handleTextEdit();
+      }
+
+      public deleteText() {
+        this.textContent =
+          this.textContent.substring(0, this.caretIndex - 1) +
+          this.textContent.substring(this.caretIndex, this.textContent.length);
+        this.moveCaret(-1);
+      }
+
+      public insertText(text: string) {
+        this.textContent =
+          this.textContent.slice(0, this.caretIndex) +
+          text +
+          this.textContent.slice(this.caretIndex);
+        this.moveCaret(text.length);
+      }
+
+      public moveCaret(change: number) {
+        this.caretIndex += change;
+      }
+
+      public exitEditMode() {
+        this.mode = ComponentMode.VIEW;
       }
 
       public handleFocus() {
@@ -110,7 +133,7 @@ export function TextContentEditable() {
         if (this.shouldDrawCursor) {
           const textToCursor = (this.textContent || "").substring(
             0,
-            this.cursorIndex
+            this.caretIndex
           );
 
           const textMetrics = context.ctx.measureText(textToCursor);
@@ -119,7 +142,7 @@ export function TextContentEditable() {
             this.position.y - textMetrics.fontBoundingBoxAscent
           );
 
-          context.ctx.fillStyle = this.cursorColor.toString();
+          context.ctx.fillStyle = this.caretColor.toString();
           const renderPosition =
             context.viewport.calculateRenderPosition(position);
 
@@ -153,35 +176,41 @@ export function TextContentEditable() {
         window.addEventListener("keydown", (event) => {
           if (this.mode !== ComponentMode.EDIT) return;
 
-          if (event.key === "Backspace" || event.key === "Delete") {
-            this.textContent = this.textContent.substring(
-              0,
-              this.textContent.length - 1
-            );
-          } else if (event.key === "Space") {
-            this.textContent += " ";
-          } else if (event.key === "ArrowLeft") {
-            this.cursorIndex = _.clamp(
-              this.cursorIndex - 1,
-              0,
-              this.textContent.length
-            );
-          } else if (event.key === "ArrowRight") {
-            this.cursorIndex = _.clamp(
-              this.cursorIndex + 1,
-              0,
-              this.textContent.length
-            );
-          } else if (event.key === "Enter" || event.key === "Return") {
-            this.mode = ComponentMode.VIEW;
-          } else if (
-            event.key !== "Shift" &&
+          const key = event.key;
+
+          if (key === "Backspace" || key === "Delete") {
+            this.deleteText();
+            return;
+          }
+
+          if (key === "Space") {
+            this.insertText(" ");
+            return;
+          }
+
+          if (key === "ArrowLeft") {
+            this.moveCaret(-1);
+            return;
+          }
+
+          if (key === "ArrowRight") {
+            this.moveCaret(1);
+            return;
+          }
+
+          if (key === "Enter" || key === "Return") {
+            this.exitEditMode();
+            return;
+          }
+
+          if (
+            !event.shiftKey &&
             !event.altKey &&
             !event.ctrlKey &&
             !event.metaKey
           ) {
-            this.textContent += event.key;
-            this.cursorIndex++;
+            this.insertText(event.key);
+            return;
           }
         });
       }

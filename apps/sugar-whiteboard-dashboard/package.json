@@ -15,9 +15,10 @@
   },
   "dependencies": {
     "pinia": "^2.1.7",
+    "radix-vue": "^1.2.4",
+    "sugar-whiteboard-core": "*",
     "vue": "^3.3.4",
-    "vue-router": "^4.2.5",
-    "sugar-whiteboard-core": "*"
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.39.0",

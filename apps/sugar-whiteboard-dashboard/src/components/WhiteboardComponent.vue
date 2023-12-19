@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { Whiteboard, RectComponent, TextComponent, Vector, Color } from "sugar-whiteboard-core"
+  import {  } from 'radix-vue'
   import { ref, computed, watchEffect } from "vue";
 
   // trash code
@@ -43,7 +44,6 @@
 </script>
 
 <template>
-  <p>This is my innovative canvas!</p>
-  <canvas ref="canvasRef" width="700" height="700"></canvas>
-  <button @click="addText">Add text</button>
+  <canvas ref="canvasRef"></canvas>
+  <FwbButton class="fixed bottom-10 right-20" @click="addText">Add Text</FwbButton>
 </template>

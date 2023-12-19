@@ -3,6 +3,5 @@
 </script>
 
 <template>
-  <p>Project Page</p>
   <WhiteboardComponent />
 </template>
