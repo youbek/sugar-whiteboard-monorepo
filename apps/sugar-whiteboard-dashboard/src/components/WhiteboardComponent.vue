@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import { Whiteboard, RectComponent, TextComponent, Vector, Color } from "sugar-whiteboard-core"
-  import {  } from 'radix-vue'
   import { ref, computed, watchEffect } from "vue";
+  import IconButtonComponent from "./IconButtonComponent.vue";
+  import TextIcon from "../assets/icons/text.svg"
 
   // trash code
   const redRectangle = new RectComponent();
@@ -45,5 +46,9 @@
 
 <template>
   <canvas ref="canvasRef"></canvas>
-  <FwbButton class="fixed bottom-10 right-20" @click="addText">Add Text</FwbButton>
+  <div class="fixed top-0 pointer-events-none">
+    <div class="h-screen flex items-center px-2 pointer-events-none">
+      <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addText"><TextIcon /></IconButtonComponent>
+    </div>
+  </div>
 </template>
