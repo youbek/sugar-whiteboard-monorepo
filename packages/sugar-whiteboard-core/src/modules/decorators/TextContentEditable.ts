@@ -7,12 +7,17 @@ import {
   MouseComponent,
   DrawContext,
 } from "../components";
-import { Viewport } from "../rendering";
+import { ComponentsTree, Viewport } from "../rendering";
+import { multiLineTextMetrics } from "../../utils/functions";
 
 export function TextContentEditable() {
   return function <T extends Constructor<TextComponent>>(Base: T) {
     return class TextContentEditableClass extends Base {
+      // By previous it means after last edit mode
+      public prevTextContent = "";
+
       public caretIndex = 0;
+
       public caretColor = new Color(0, 0, 0, 1);
       public editBorderColor = new Color(66, 195, 255, 1);
       public editModePadding = 5;
@@ -51,8 +56,17 @@ export function TextContentEditable() {
         this.caretIndex += change;
       }
 
+      public resetToPrevState() {
+        this.textContent = this.prevTextContent;
+      }
+
       public exitEditMode() {
         this.mode = ComponentMode.VIEW;
+
+        if (!this.textContent.length) {
+          const tree = ComponentsTree.getCurrentComponentsTree();
+          tree.removeComponent(this);
+        }
       }
 
       public handleFocus() {
@@ -83,26 +97,42 @@ export function TextContentEditable() {
           if (hasClicked) {
             this.mode = ComponentMode.EDIT;
           } else {
-            this.mode = ComponentMode.VIEW;
+            this.exitEditMode();
           }
         });
 
         canvas.addEventListener("click", (event) => {
           event.preventDefault();
 
-          this.mode = ComponentMode.VIEW;
+          const hasClicked = mouseComponent.isColliding(this);
+
+          if (!hasClicked) {
+            this.exitEditMode();
+          }
         });
 
         this.mode = ComponentMode.EDIT;
+
+        if (
+          document.activeElement &&
+          document.activeElement instanceof HTMLElement
+        ) {
+          console.log("Have you removed blur?");
+          document.activeElement.blur();
+        }
       }
 
       public drawEditBorder(context: DrawContext) {
-        const textMetrics = context.ctx.measureText(
+        const textMetrics = multiLineTextMetrics(
+          context.ctx,
           this.textContent || this.placeholderText || "Dummy Text"
         );
+
         const borderSize = new Vector(
-          textMetrics.width,
-          textMetrics.fontBoundingBoxAscent + textMetrics.fontBoundingBoxDescent
+          textMetrics.longestLineMetrics.width,
+          (textMetrics.longestLineMetrics.fontBoundingBoxAscent +
+            textMetrics.longestLineMetrics.fontBoundingBoxDescent) *
+            textMetrics.lines.length
         );
 
         const renderPosition = context.viewport.calculateRenderPosition(
@@ -113,7 +143,7 @@ export function TextContentEditable() {
         context.ctx.strokeRect(
           renderPosition.x - this.editModePadding,
           renderPosition.y -
-            textMetrics.fontBoundingBoxAscent -
+            textMetrics.longestLineMetrics.fontBoundingBoxAscent -
             this.editModePadding,
           borderSize.x + this.editModePadding,
           borderSize.y + this.editModePadding
@@ -136,10 +166,21 @@ export function TextContentEditable() {
             this.caretIndex
           );
 
-          const textMetrics = context.ctx.measureText(textToCursor);
+          const textMetrics = multiLineTextMetrics(context.ctx, textToCursor);
+          const height =
+            (textMetrics.lastLineMetrics.fontBoundingBoxAscent +
+              textMetrics.lastLineMetrics.fontBoundingBoxDescent) *
+            (textMetrics.lines.length - 1);
+
           const position = new Vector(
-            this.position.x + textMetrics.width + this.editModePadding,
-            this.position.y - textMetrics.fontBoundingBoxAscent
+            this.position.x +
+              textMetrics.lastLineMetrics.width +
+              this.editModePadding,
+            this.position.y +
+              height -
+              (textMetrics.lastLineMetrics.fontBoundingBoxAscent +
+                textMetrics.lastLineMetrics.fontBoundingBoxDescent) +
+              this.editModePadding
           );
 
           context.ctx.fillStyle = this.caretColor.toString();
@@ -150,7 +191,9 @@ export function TextContentEditable() {
             renderPosition.x - this.editModePadding,
             renderPosition.y - this.editModePadding,
             2,
-            this.size.y + this.editModePadding
+            textMetrics.lastLineMetrics.fontBoundingBoxAscent +
+              textMetrics.lastLineMetrics.fontBoundingBoxDescent +
+              this.editModePadding
           );
         }
       }
@@ -178,6 +221,12 @@ export function TextContentEditable() {
 
           const key = event.key;
 
+          if (key === "Escape") {
+            this.resetToPrevState();
+            this.exitEditMode();
+            return;
+          }
+
           if (key === "Backspace" || key === "Delete") {
             this.deleteText();
             return;
@@ -199,19 +248,21 @@ export function TextContentEditable() {
           }
 
           if (key === "Enter" || key === "Return") {
+            if (event.shiftKey) {
+              this.insertText("\n");
+              return;
+            }
+
             this.exitEditMode();
             return;
           }
 
-          if (
-            !event.shiftKey &&
-            !event.altKey &&
-            !event.ctrlKey &&
-            !event.metaKey
-          ) {
-            this.insertText(event.key);
+          if (key === "Shift" || key === "Alt" || key === "Control") {
             return;
           }
+
+          this.insertText(event.key);
+          return;
         });
       }
     };

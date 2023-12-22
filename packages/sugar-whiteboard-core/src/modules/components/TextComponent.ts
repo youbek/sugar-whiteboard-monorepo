@@ -28,18 +28,29 @@ export class TextComponent extends RectComponent {
   }
 
   public drawText(context: DrawContext) {
+    const { fontBoundingBoxAscent, fontBoundingBoxDescent } =
+      context.ctx.measureText(this.textContent);
+
+    const lineHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
+
     context.ctx.font = `300 ${this.fontSize} sans-serif`;
     context.ctx.fillStyle = this.color.toString();
     this.lastRenderPosition = context.viewport.calculateRenderPosition(
       this.position
     );
 
-    context.ctx.font = `300 ${this.fontSize} sans-serif`;
-    context.ctx.fillText(
-      this.textContent,
-      this.lastRenderPosition.x,
-      this.lastRenderPosition.y
-    );
+    const lines = this.textContent.split("\n");
+
+    for (let i = 0; i < lines.length; i++) {
+      const text = lines[i];
+
+      context.ctx.font = `300 ${this.fontSize} sans-serif`;
+      context.ctx.fillText(
+        text,
+        this.lastRenderPosition.x,
+        this.lastRenderPosition.y + lineHeight * i
+      );
+    }
   }
 
   public draw(context: DrawContext): void {
