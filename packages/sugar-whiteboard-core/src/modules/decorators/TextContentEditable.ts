@@ -22,7 +22,7 @@ export function TextContentEditable() {
       public editBorderColor = new Color(66, 195, 255, 1);
       public editModePadding = 5;
 
-      public blinkDelay = 2; // 2 second
+      public blinkDelay = 0.5; // 0.5 second
       public blinkTimer = 0;
       public shouldDrawCursor = true;
 
@@ -41,7 +41,7 @@ export function TextContentEditable() {
         this.textContent =
           this.textContent.substring(0, this.caretIndex - 1) +
           this.textContent.substring(this.caretIndex, this.textContent.length);
-        this.moveCaret(-1);
+        this.moveCaretHorizontal(-1);
       }
 
       public insertText(text: string) {
@@ -49,11 +49,43 @@ export function TextContentEditable() {
           this.textContent.slice(0, this.caretIndex) +
           text +
           this.textContent.slice(this.caretIndex);
-        this.moveCaret(text.length);
+        this.moveCaretHorizontal(text.length);
       }
 
-      public moveCaret(change: number) {
+      public moveCaretHorizontal(change: number) {
         this.caretIndex += change;
+      }
+
+      public moveCaretVertical(direction: number) {
+        const lines = this.textContent.split("\n");
+        let carotLineIndex = 0;
+        let carotIndexWithinItsLine = this.caretIndex;
+
+        for (let i = 0, totalSeenLength = 0; i < lines.length; i++) {
+          const lineLength = lines[i].length;
+          carotIndexWithinItsLine = this.caretIndex - totalSeenLength;
+          totalSeenLength += lineLength;
+          const isCaretInThisLine = totalSeenLength >= this.caretIndex;
+          if (isCaretInThisLine) {
+            carotLineIndex = i;
+            break;
+          }
+        }
+
+        const isUp = direction > 0;
+        const currentLine = lines[carotLineIndex];
+
+        if (isUp) {
+          const prevLine = lines[carotLineIndex - 1];
+          if (!prevLine) {
+            return;
+          }
+
+          if (prevLine.length < currentLine.length) {
+            this.caretIndex = prevLine.length - 1;
+            return;
+          }
+        }
       }
 
       public resetToPrevState() {
@@ -238,12 +270,22 @@ export function TextContentEditable() {
           }
 
           if (key === "ArrowLeft") {
-            this.moveCaret(-1);
+            this.moveCaretHorizontal(-1);
             return;
           }
 
           if (key === "ArrowRight") {
-            this.moveCaret(1);
+            this.moveCaretHorizontal(1);
+            return;
+          }
+
+          if (key === "ArrowUp") {
+            this.moveCaretVertical(1);
+            return;
+          }
+
+          if (key === "ArrowDown") {
+            this.moveCaretVertical(-1);
             return;
           }
 

@@ -17,6 +17,7 @@ type DrawOptions = ScheduleDrawOptions & {
 };
 
 export class SugarEngine {
+  private lastDrawTime: number | null = null;
   private renderingId: number | null = null;
 
   constructor() {
@@ -36,8 +37,14 @@ export class SugarEngine {
       return;
     }
 
-    const currentTime = performance.now();
-    const deltaTime = (currentTime - prevFrameEndTime) / 100;
+    let deltaTime = 0;
+
+    if (!this.lastDrawTime) {
+      this.lastDrawTime = prevFrameEndTime;
+    } else {
+      deltaTime = (prevFrameEndTime - this.lastDrawTime) / 1000;
+      this.lastDrawTime = prevFrameEndTime;
+    }
 
     for (let component of componentsTree.getComponents()) {
       component.draw({
