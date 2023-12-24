@@ -1,7 +1,4 @@
-type Selection = {
-  start: number; // inclusive
-  end: number; // exclusive
-};
+import { TextSelection } from "./TextSelection";
 
 type MultiLineMetrics = {
   longestLineMetrics: TextMetrics;
@@ -45,19 +42,13 @@ export class Text {
     this.content = newContent;
   }
 
-  public getContent(selection?: Selection) {
+  public getContent(selection?: TextSelection) {
     if (!selection) return this.content;
 
-    return this.content.substring(0, selection.end);
+    return this.content.substring(selection.start, selection.end);
   }
 
-  public deleteContent(selection: Selection) {
-    if (selection.start >= selection.end) {
-      throw new Error(
-        `Invalid selection: start - ${selection.start} and end - ${selection.end}.\nEnd should be greater than start.\nEnd is exclusive and start is inclusive!`
-      );
-    }
-
+  public deleteContent(selection: TextSelection) {
     const isWholeContent =
       selection.start + selection.end === this.content.length;
     if (isWholeContent) {

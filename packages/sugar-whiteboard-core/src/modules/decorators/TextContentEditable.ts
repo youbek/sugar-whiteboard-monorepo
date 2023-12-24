@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Color, Vector, Text } from "../../atoms";
+import { Color, Vector, Text, TextSelection } from "../../atoms";
 import { Constructor } from "../../utils/type";
 import {
   TextComponent,
@@ -16,10 +16,11 @@ export function TextContentEditable() {
       public prevTextContent = "";
 
       public caretIndex = 0;
+      public selectionStart = -1;
 
       public caretColor = new Color(0, 0, 0, 1);
       public editBorderColor = new Color(66, 195, 255, 1);
-      public editModePadding = 5;
+      public selectionColor = new Color(66, 195, 255, 0.2);
 
       public blinkDelay = 0.5; // 0.5 second
       public blinkTimer = 0;
@@ -37,10 +38,9 @@ export function TextContentEditable() {
       }
 
       public deleteText() {
-        this.text.deleteContent({
-          start: this.caretIndex - 1,
-          end: this.caretIndex,
-        });
+        this.text.deleteContent(
+          new TextSelection(this.caretIndex - 1, this.caretIndex)
+        );
         this.moveCaretHorizontal(-1);
       }
 
@@ -49,7 +49,16 @@ export function TextContentEditable() {
         this.moveCaretHorizontal(text.length);
       }
 
-      public moveCaretHorizontal(change: number) {
+      public moveCaretHorizontal(change: number, withSelection = false) {
+        if (!withSelection) {
+          this.selectionStart = -1;
+        } else {
+          this.selectionStart =
+            this.selectionStart === -1 ? this.caretIndex : this.selectionStart;
+        }
+
+        console.log(this.selectionStart);
+
         this.caretIndex = _.clamp(
           this.caretIndex + change,
           0,
@@ -184,20 +193,106 @@ export function TextContentEditable() {
         );
 
         const renderPosition = context.viewport.calculateRenderPosition(
-          this.position
+          new Vector(
+            this.position.x,
+            this.position.y -
+              textMetrics.longestLineMetrics.fontBoundingBoxAscent
+          )
         );
 
         context.ctx.strokeStyle = this.editBorderColor.toString();
         context.ctx.strokeRect(
-          renderPosition.x - this.editModePadding,
-          renderPosition.y -
-            textMetrics.longestLineMetrics.fontBoundingBoxAscent -
-            this.editModePadding,
-          borderSize.x + this.editModePadding,
-          borderSize.y + this.editModePadding
+          renderPosition.x,
+          renderPosition.y,
+          borderSize.x,
+          borderSize.y
         );
 
         this.size = borderSize;
+      }
+
+      public drawSelection(context: DrawContext) {
+        if (this.selectionStart < 0) return;
+
+        const selection = new TextSelection(
+          this.selectionStart,
+          this.caretIndex
+        );
+        const selectionText = new Text(this.text.getContent());
+        const lines = selectionText.getLines();
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+
+          const isNotSelectedLine = !(
+            selection.start >= line.startIndex || selection.end <= line.endIndex
+          );
+          if (isNotSelectedLine) continue;
+
+          const lineSelectionStart =
+            selection.start < line.startIndex
+              ? 0
+              : selection.start - line.startIndex;
+          const lineSelectionEnd =
+            selection.end > line.endIndex
+              ? line.content.length
+              : line.content.length - (line.endIndex - selection.end);
+
+          const lineSelection = new TextSelection(
+            lineSelectionStart,
+            lineSelectionEnd
+          );
+
+          const lineText = new Text(line.content);
+          const lineSelectionText = new Text(
+            lineText.getContent(lineSelection)
+          );
+          const lineSelectionMetrics = lineSelectionText.multiLineTextMetrics(
+            context.ctx
+          );
+
+          const offsetText =
+            lineSelection.start > 0
+              ? new Text(
+                  lineText.getContent(new TextSelection(0, lineSelection.start))
+                )
+              : "";
+
+          let offsetTextBoxSize: Vector = new Vector(0, 0);
+
+          if (offsetText) {
+            const offsetMetrics = offsetText.multiLineTextMetrics(context.ctx);
+
+            offsetTextBoxSize = new Vector(
+              offsetMetrics.longestLineMetrics.width,
+              (offsetMetrics.longestLineMetrics.fontBoundingBoxAscent +
+                offsetMetrics.longestLineMetrics.fontBoundingBoxDescent) *
+                offsetMetrics.lines.length
+            );
+          }
+
+          const boxSize = new Vector(
+            lineSelectionMetrics.longestLineMetrics.width,
+            (lineSelectionMetrics.longestLineMetrics.fontBoundingBoxAscent +
+              lineSelectionMetrics.longestLineMetrics.fontBoundingBoxDescent) *
+              lineSelectionMetrics.lines.length
+          );
+
+          const renderPosition = context.viewport.calculateRenderPosition(
+            new Vector(
+              this.position.x + offsetTextBoxSize.x,
+              this.position.y -
+                lineSelectionMetrics.longestLineMetrics.fontBoundingBoxAscent
+            )
+          );
+
+          context.ctx.fillStyle = this.selectionColor.toString();
+          context.ctx.fillRect(
+            renderPosition.x,
+            renderPosition.y + boxSize.y * i,
+            boxSize.x,
+            boxSize.y
+          );
+        }
       }
 
       public drawCursor(context: DrawContext) {
@@ -210,10 +305,7 @@ export function TextContentEditable() {
 
         if (this.shouldDrawCursor) {
           const textToCursor = new Text(
-            this.text.getContent({
-              start: 0,
-              end: this.caretIndex,
-            })
+            this.text.getContent(new TextSelection(0, this.caretIndex))
           );
 
           const textMetrics = textToCursor.multiLineTextMetrics(context.ctx);
@@ -227,13 +319,8 @@ export function TextContentEditable() {
             this.position.x +
               (textToCursor.getContent()
                 ? textMetrics.lastLineMetrics.width
-                : 0) +
-              this.editModePadding,
-            this.position.y +
-              height -
-              (textMetrics.lastLineMetrics.fontBoundingBoxAscent +
-                textMetrics.lastLineMetrics.fontBoundingBoxDescent) +
-              this.editModePadding
+                : 0),
+            this.position.y - textMetrics.lastLineMetrics.fontBoundingBoxAscent
           );
 
           context.ctx.fillStyle = this.caretColor.toString();
@@ -241,12 +328,11 @@ export function TextContentEditable() {
             context.viewport.calculateRenderPosition(position);
 
           context.ctx.fillRect(
-            renderPosition.x - this.editModePadding,
-            renderPosition.y - this.editModePadding,
+            renderPosition.x,
+            renderPosition.y + height,
             2,
             textMetrics.lastLineMetrics.fontBoundingBoxAscent +
-              textMetrics.lastLineMetrics.fontBoundingBoxDescent +
-              this.editModePadding
+              textMetrics.lastLineMetrics.fontBoundingBoxDescent
           );
         }
       }
@@ -260,6 +346,7 @@ export function TextContentEditable() {
         super.draw(context);
 
         if (this.mode === ComponentMode.EDIT) {
+          this.drawSelection(context);
           this.drawEditBorder(context);
           this.drawCursor(context);
         } else {
@@ -298,12 +385,12 @@ export function TextContentEditable() {
           }
 
           if (key === "ArrowLeft") {
-            this.moveCaretHorizontal(-1);
+            this.moveCaretHorizontal(-1, event.shiftKey);
             return;
           }
 
           if (key === "ArrowRight") {
-            this.moveCaretHorizontal(1);
+            this.moveCaretHorizontal(1, event.shiftKey);
             return;
           }
 
@@ -324,6 +411,26 @@ export function TextContentEditable() {
             }
 
             this.exitEditMode();
+            return;
+          }
+
+          if (key === "a" && event.ctrlKey) {
+            this.selectionStart = 0;
+            this.caretIndex = this.text.getContent().length;
+            return;
+          }
+
+          if (
+            key === "c" &&
+            event.ctrlKey &&
+            this.selectionStart > -1 &&
+            this.caretIndex > this.selectionStart
+          ) {
+            navigator.clipboard.writeText(
+              this.text.getContent(
+                new TextSelection(this.selectionStart, this.caretIndex)
+              )
+            );
             return;
           }
 
