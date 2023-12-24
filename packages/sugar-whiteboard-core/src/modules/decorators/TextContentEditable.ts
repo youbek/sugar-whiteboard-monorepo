@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Color, Vector } from "../../atoms";
+import { Color, Vector, Text } from "../../atoms";
 import { Constructor } from "../../utils/type";
 import {
   TextComponent,
@@ -8,7 +8,6 @@ import {
   DrawContext,
 } from "../components";
 import { ComponentsTree, Viewport } from "../rendering";
-import { multiLineTextMetrics } from "../../utils/functions";
 
 export function TextContentEditable() {
   return function <T extends Constructor<TextComponent>>(Base: T) {
@@ -38,42 +37,56 @@ export function TextContentEditable() {
       }
 
       public deleteText() {
-        this.textContent =
-          this.textContent.substring(0, this.caretIndex - 1) +
-          this.textContent.substring(this.caretIndex, this.textContent.length);
+        this.text.deleteContent({
+          start: this.caretIndex - 1,
+          end: this.caretIndex,
+        });
         this.moveCaretHorizontal(-1);
       }
 
       public insertText(text: string) {
-        this.textContent =
-          this.textContent.slice(0, this.caretIndex) +
-          text +
-          this.textContent.slice(this.caretIndex);
+        this.text.insertContent(text, this.caretIndex);
         this.moveCaretHorizontal(text.length);
       }
 
       public moveCaretHorizontal(change: number) {
-        this.caretIndex += change;
+        this.caretIndex = _.clamp(
+          this.caretIndex + change,
+          0,
+          this.text.getContent().length
+        );
       }
 
       public moveCaretVertical(direction: number) {
-        const lines = this.textContent.split("\n");
-        let carotLineIndex = 0;
-        let carotIndexWithinItsLine = this.caretIndex;
+        const lines = this.text.getLines();
 
-        for (let i = 0, totalSeenLength = 0; i < lines.length; i++) {
-          const lineLength = lines[i].length;
-          carotIndexWithinItsLine = this.caretIndex - totalSeenLength;
-          totalSeenLength += lineLength;
-          const isCaretInThisLine = totalSeenLength >= this.caretIndex;
+        console.log(lines);
+
+        let carotLineIndex: number | undefined = undefined;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const isCaretInThisLine =
+            this.caretIndex >= line.startIndex &&
+            this.caretIndex < line.endIndex;
           if (isCaretInThisLine) {
             carotLineIndex = i;
             break;
           }
         }
 
+        if (carotLineIndex === undefined) {
+          // Why? - If carot is in the position where new characters can be added. It exceeds text content total length.
+          carotLineIndex = lines.length - 1;
+        }
+
         const isUp = direction > 0;
-        const currentLine = lines[carotLineIndex];
+        const caretLine = lines[carotLineIndex];
+        const caretIndexInLine = this.caretIndex - caretLine.startIndex;
+
+        console.log(caretIndexInLine);
+        console.log(caretLine);
+        console.log(this.caretIndex);
 
         if (isUp) {
           const prevLine = lines[carotLineIndex - 1];
@@ -81,21 +94,24 @@ export function TextContentEditable() {
             return;
           }
 
-          if (prevLine.length < currentLine.length) {
-            this.caretIndex = prevLine.length - 1;
+          if (prevLine.content.length < caretIndexInLine) {
+            this.caretIndex = prevLine.endIndex;
             return;
           }
+
+          console.log("I'm HERE YOU MORON!");
+          this.caretIndex = prevLine.startIndex + caretIndexInLine;
         }
       }
 
       public resetToPrevState() {
-        this.textContent = this.prevTextContent;
+        this.text.setContent(this.prevTextContent);
       }
 
       public exitEditMode() {
         this.mode = ComponentMode.VIEW;
 
-        if (!this.textContent.length) {
+        if (!this.text.getContent().length) {
           const tree = ComponentsTree.getCurrentComponentsTree();
           tree.removeComponent(this);
         }
@@ -155,9 +171,9 @@ export function TextContentEditable() {
       }
 
       public drawEditBorder(context: DrawContext) {
-        const textMetrics = multiLineTextMetrics(
+        const textMetrics = this.text.multiLineTextMetrics(
           context.ctx,
-          this.textContent || this.placeholderText || "Dummy Text"
+          this.placeholderText || "Dummy Text"
         );
 
         const borderSize = new Vector(
@@ -193,12 +209,14 @@ export function TextContentEditable() {
         }
 
         if (this.shouldDrawCursor) {
-          const textToCursor = (this.textContent || "").substring(
-            0,
-            this.caretIndex
+          const textToCursor = new Text(
+            this.text.getContent({
+              start: 0,
+              end: this.caretIndex,
+            })
           );
 
-          const textMetrics = multiLineTextMetrics(context.ctx, textToCursor);
+          const textMetrics = textToCursor.multiLineTextMetrics(context.ctx);
           const height =
             (textMetrics.lastLineMetrics.fontBoundingBoxAscent +
               textMetrics.lastLineMetrics.fontBoundingBoxDescent) *

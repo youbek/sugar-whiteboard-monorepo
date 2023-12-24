@@ -1,4 +1,4 @@
-import { Color } from "../../atoms";
+import { Text, Color } from "../../atoms";
 import { Draggable, TextContentEditable } from "../decorators";
 import { DrawContext } from "./Component";
 import { RectComponent } from "./RectComponent";
@@ -6,7 +6,7 @@ import { RectComponent } from "./RectComponent";
 @Draggable()
 @TextContentEditable()
 export class TextComponent extends RectComponent {
-  public textContent: string = "";
+  public text = new Text();
   public color = new Color(0, 0, 0, 1);
   public placeholderText = "Type something";
   public placeholderColor = new Color(0, 0, 0, 0.2);
@@ -28,25 +28,25 @@ export class TextComponent extends RectComponent {
   }
 
   public drawText(context: DrawContext) {
-    const { fontBoundingBoxAscent, fontBoundingBoxDescent } =
-      context.ctx.measureText(this.textContent);
-
-    const lineHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
-
     context.ctx.font = `300 ${this.fontSize} sans-serif`;
     context.ctx.fillStyle = this.color.toString();
+
     this.lastRenderPosition = context.viewport.calculateRenderPosition(
       this.position
     );
 
-    const lines = this.textContent.split("\n");
+    const {
+      longestLineMetrics: { fontBoundingBoxAscent, fontBoundingBoxDescent },
+    } = this.text.multiLineTextMetrics(context.ctx);
 
+    const lineHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
+
+    const lines = this.text.getLines();
     for (let i = 0; i < lines.length; i++) {
-      const text = lines[i];
+      const line = lines[i];
 
-      context.ctx.font = `300 ${this.fontSize} sans-serif`;
       context.ctx.fillText(
-        text,
+        line.content,
         this.lastRenderPosition.x,
         this.lastRenderPosition.y + lineHeight * i
       );
@@ -54,7 +54,7 @@ export class TextComponent extends RectComponent {
   }
 
   public draw(context: DrawContext): void {
-    if (!this.textContent) {
+    if (!this.text.getContent()) {
       this.drawPlaceholder(context);
     } else {
       this.drawText(context);
