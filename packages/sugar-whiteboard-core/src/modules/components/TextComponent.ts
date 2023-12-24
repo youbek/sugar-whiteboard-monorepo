@@ -19,7 +19,7 @@ export class TextComponent extends RectComponent {
       this.position
     );
 
-    context.ctx.font = `300 ${this.fontSize} sans-serif`;
+    context.ctx.font = `300 ${this.fontSize} monospace`;
     context.ctx.fillText(
       "Type something",
       this.lastRenderPosition.x,
@@ -28,7 +28,7 @@ export class TextComponent extends RectComponent {
   }
 
   public drawText(context: DrawContext) {
-    context.ctx.font = `300 ${this.fontSize} sans-serif`;
+    context.ctx.font = `300 ${this.fontSize} monospace`;
     context.ctx.fillStyle = this.color.toString();
 
     this.lastRenderPosition = context.viewport.calculateRenderPosition(

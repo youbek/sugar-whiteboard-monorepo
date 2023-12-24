@@ -60,8 +60,6 @@ export function TextContentEditable() {
       public moveCaretVertical(direction: number) {
         const lines = this.text.getLines();
 
-        console.log(lines);
-
         let carotLineIndex: number | undefined = undefined;
 
         for (let i = 0; i < lines.length; i++) {
@@ -219,6 +217,7 @@ export function TextContentEditable() {
           );
 
           const textMetrics = textToCursor.multiLineTextMetrics(context.ctx);
+
           const height =
             (textMetrics.lastLineMetrics.fontBoundingBoxAscent +
               textMetrics.lastLineMetrics.fontBoundingBoxDescent) *
@@ -226,7 +225,9 @@ export function TextContentEditable() {
 
           const position = new Vector(
             this.position.x +
-              textMetrics.lastLineMetrics.width +
+              (textToCursor.getContent()
+                ? textMetrics.lastLineMetrics.width
+                : 0) +
               this.editModePadding,
             this.position.y +
               height -
@@ -250,6 +251,11 @@ export function TextContentEditable() {
         }
       }
 
+      public freezeCursorBlinking() {
+        this.blinkTimer = 0;
+        this.shouldDrawCursor = true;
+      }
+
       public draw(context: DrawContext): void {
         super.draw(context);
 
@@ -270,6 +276,8 @@ export function TextContentEditable() {
 
         window.addEventListener("keydown", (event) => {
           if (this.mode !== ComponentMode.EDIT) return;
+
+          this.freezeCursorBlinking();
 
           const key = event.key;
 
