@@ -68,7 +68,7 @@ export function TextContentEditable() {
           const line = lines[i];
           const isCaretInThisLine =
             this.caretIndex >= line.startIndex &&
-            this.caretIndex < line.endIndex;
+            this.caretIndex <= line.endIndex;
           if (isCaretInThisLine) {
             carotLineIndex = i;
             break;
@@ -76,31 +76,33 @@ export function TextContentEditable() {
         }
 
         if (carotLineIndex === undefined) {
-          // Why? - If carot is in the position where new characters can be added. It exceeds text content total length.
-          carotLineIndex = lines.length - 1;
+          throw new Error(`Line that carot is in cannot be found!`);
         }
 
         const isUp = direction > 0;
         const caretLine = lines[carotLineIndex];
         const caretIndexInLine = this.caretIndex - caretLine.startIndex;
 
-        console.log(caretIndexInLine);
-        console.log(caretLine);
-        console.log(this.caretIndex);
-
         if (isUp) {
           const prevLine = lines[carotLineIndex - 1];
-          if (!prevLine) {
-            return;
-          }
+          if (!prevLine) return;
 
           if (prevLine.content.length < caretIndexInLine) {
             this.caretIndex = prevLine.endIndex;
             return;
           }
 
-          console.log("I'm HERE YOU MORON!");
           this.caretIndex = prevLine.startIndex + caretIndexInLine;
+        } else {
+          const nextLine = lines[carotLineIndex + 1];
+          if (!nextLine) return;
+
+          if (nextLine.content.length < caretIndexInLine) {
+            this.caretIndex = nextLine.endIndex;
+            return;
+          }
+
+          this.caretIndex = nextLine.startIndex + caretIndexInLine;
         }
       }
 
