@@ -37,36 +37,56 @@ export function TextContentEditable() {
         this.handleTextEdit();
       }
 
+      public setCaretIndex(caretIndex: number, selectionStart: number = -1) {
+        const withSelection = selectionStart !== -1;
+        if (!withSelection) {
+          this.selectionStart = -1;
+        } else {
+          this.selectionStart =
+            this.selectionStart > 0 ? this.selectionStart : selectionStart;
+        }
+
+        this.caretIndex = caretIndex;
+      }
+
       public deleteText() {
-        this.text.deleteContent(
-          new TextSelection(this.caretIndex - 1, this.caretIndex)
-        );
-        this.moveCaretHorizontal(-1);
+        const deleteSelection = this.selectionStart !== -1;
+
+        if (deleteSelection) {
+          this.text.deleteContent(
+            new TextSelection(this.selectionStart, this.caretIndex)
+          );
+          this.moveCaretHorizontal(0);
+        } else {
+          this.text.deleteContent(
+            new TextSelection(this.caretIndex - 1, this.caretIndex)
+          );
+          this.moveCaretHorizontal(-1);
+        }
       }
 
       public insertText(text: string) {
+        if (this.selectionStart !== -1) {
+          this.deleteText();
+        }
+
         this.text.insertContent(text, this.caretIndex);
         this.moveCaretHorizontal(text.length);
       }
 
       public moveCaretHorizontal(change: number, withSelection = false) {
-        if (!withSelection) {
-          this.selectionStart = -1;
-        } else {
-          this.selectionStart =
-            this.selectionStart === -1 ? this.caretIndex : this.selectionStart;
-        }
-
-        console.log(this.selectionStart);
-
-        this.caretIndex = _.clamp(
+        const newCaretIndex = _.clamp(
           this.caretIndex + change,
           0,
           this.text.getContent().length
         );
+        this.setCaretIndex(
+          newCaretIndex,
+          withSelection ? this.caretIndex : undefined
+        );
       }
 
-      public moveCaretVertical(direction: number) {
+      public moveCaretVertical(direction: number, withSelection = false) {
         const lines = this.text.getLines();
 
         let carotLineIndex: number | undefined = undefined;
@@ -95,21 +115,34 @@ export function TextContentEditable() {
           if (!prevLine) return;
 
           if (prevLine.content.length < caretIndexInLine) {
-            this.caretIndex = prevLine.endIndex;
+            this.setCaretIndex(
+              prevLine.endIndex,
+              withSelection ? this.caretIndex : undefined
+            );
+
             return;
           }
 
-          this.caretIndex = prevLine.startIndex + caretIndexInLine;
+          this.setCaretIndex(
+            prevLine.startIndex + caretIndexInLine,
+            withSelection ? this.caretIndex : undefined
+          );
         } else {
           const nextLine = lines[carotLineIndex + 1];
           if (!nextLine) return;
 
           if (nextLine.content.length < caretIndexInLine) {
-            this.caretIndex = nextLine.endIndex;
+            this.setCaretIndex(
+              nextLine.endIndex,
+              withSelection ? this.caretIndex : undefined
+            );
+
             return;
           }
-
-          this.caretIndex = nextLine.startIndex + caretIndexInLine;
+          this.setCaretIndex(
+            nextLine.startIndex + caretIndexInLine,
+            withSelection ? this.caretIndex : undefined
+          );
         }
       }
 
@@ -119,6 +152,7 @@ export function TextContentEditable() {
 
       public exitEditMode() {
         this.mode = ComponentMode.VIEW;
+        this.setCaretIndex(this.text.getContent().length);
 
         if (!this.text.getContent().length) {
           const tree = ComponentsTree.getCurrentComponentsTree();
@@ -174,7 +208,6 @@ export function TextContentEditable() {
           document.activeElement &&
           document.activeElement instanceof HTMLElement
         ) {
-          console.log("Have you removed blur?");
           document.activeElement.blur();
         }
       }
@@ -224,9 +257,13 @@ export function TextContentEditable() {
           const line = lines[i];
 
           const isNotSelectedLine = !(
-            selection.start >= line.startIndex || selection.end <= line.endIndex
+            selection.end >= line.startIndex && line.endIndex >= selection.start
           );
-          if (isNotSelectedLine) continue;
+
+          if (isNotSelectedLine) {
+            console.log("YES!");
+            continue;
+          }
 
           const lineSelectionStart =
             selection.start < line.startIndex
@@ -361,7 +398,7 @@ export function TextContentEditable() {
           throw new Error(`Current active Viewport not found!`);
         }
 
-        window.addEventListener("keydown", (event) => {
+        window.addEventListener("keydown", (event: KeyboardEvent) => {
           if (this.mode !== ComponentMode.EDIT) return;
 
           this.freezeCursorBlinking();
@@ -395,12 +432,12 @@ export function TextContentEditable() {
           }
 
           if (key === "ArrowUp") {
-            this.moveCaretVertical(1);
+            this.moveCaretVertical(1, event.shiftKey);
             return;
           }
 
           if (key === "ArrowDown") {
-            this.moveCaretVertical(-1);
+            this.moveCaretVertical(-1, event.shiftKey);
             return;
           }
 
@@ -415,22 +452,23 @@ export function TextContentEditable() {
           }
 
           if (key === "a" && event.ctrlKey) {
-            this.selectionStart = 0;
-            this.caretIndex = this.text.getContent().length;
+            this.setCaretIndex(this.text.getContent().length, 0);
             return;
           }
 
-          if (
-            key === "c" &&
-            event.ctrlKey &&
-            this.selectionStart > -1 &&
-            this.caretIndex > this.selectionStart
-          ) {
+          if (key === "c" && event.ctrlKey && this.selectionStart > -1) {
             navigator.clipboard.writeText(
               this.text.getContent(
                 new TextSelection(this.selectionStart, this.caretIndex)
               )
             );
+            return;
+          }
+
+          if (key === "v" && event.ctrlKey) {
+            navigator.clipboard.readText().then((text) => {
+              this.insertText(text);
+            });
             return;
           }
 
