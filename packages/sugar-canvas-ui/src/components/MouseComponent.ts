@@ -1,4 +1,4 @@
-import { Vector } from "../../atoms";
+import { Vector } from "../atoms";
 import { FollowMousePosition } from "../decorators/FollowMousePosition";
 import { ComponentsTree } from "../rendering";
 import { Component, DrawContext } from "./Component";

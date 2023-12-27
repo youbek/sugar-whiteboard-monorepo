@@ -1,4 +1,4 @@
-import { Vector } from "../../atoms";
+import { Vector } from "../atoms";
 import { Pannable } from "../decorators";
 import { Viewport } from "../rendering";
 import { Component, DrawContext } from "./Component";

@@ -1,5 +1,5 @@
 import { uid } from "uid";
-import { Vector } from "../../atoms";
+import { Vector } from "../atoms";
 import { Viewport } from "../rendering/Viewport";
 import { CollisionEngine } from "../physics/CollisionEngine";
 

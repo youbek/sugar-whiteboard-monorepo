@@ -1,12 +1,13 @@
-import { Vector } from "./atoms";
 import {
+  Vector,
   SugarEngine,
   Viewport,
   ViewportComponent,
   Component,
   MouseComponent,
   ComponentsTree,
-} from "./modules";
+  TextComponent,
+} from "sugar-canvas-ui";
 
 export class Whiteboard {
   private viewport: Viewport | null = null;
@@ -29,6 +30,11 @@ export class Whiteboard {
 
     const ctx = canvas.getContext("2d");
     ctx?.scale(scale, scale);
+  }
+
+  public addTextComponent() {
+    const textComponent = new TextComponent();
+    this.addComponent(textComponent);
   }
 
   public addComponent(component: Component) {

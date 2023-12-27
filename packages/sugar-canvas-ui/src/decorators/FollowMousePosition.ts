@@ -1,5 +1,5 @@
-import { Vector } from "../../atoms";
-import { Constructor } from "../../utils/type";
+import { Vector } from "../atoms";
+import { Constructor } from "../utils/type";
 import { Component } from "../components/Component";
 
 export function FollowMousePosition() {

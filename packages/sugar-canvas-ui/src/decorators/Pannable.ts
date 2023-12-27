@@ -1,23 +1,22 @@
+import { Vector } from "../atoms";
+import { Constructor } from "../utils/type";
+import { Component, MouseComponent } from "../components";
 import { Viewport } from "../rendering/Viewport";
-import { Component } from "../components";
-import { MouseComponent } from "../components/MouseComponent";
-import { Vector } from "../../atoms";
-import { Constructor } from "../../utils/type";
 
-export function Draggable() {
+export function Pannable() {
   return function <T extends Constructor<Component>>(BaseComponent: T) {
-    return class DraggableComponent extends BaseComponent {
+    return class PannableComponent extends BaseComponent {
       constructor(...args: any[]) {
-        super(...args);
+        super(...(args as []));
       }
 
       public init() {
         super.init();
 
-        this.setupDragging();
+        this.setupPanning();
       }
 
-      public setupDragging() {
+      public setupPanning() {
         const viewport = Viewport.getCurrentViewport();
 
         if (!viewport) {
@@ -38,19 +37,25 @@ export function Draggable() {
         }
 
         let prevWaitTimerId: any = undefined;
-        let isDragging = false;
-        let offset = new Vector(0, 0); // offset between original position (just before drag start)
+        let isPanning = false;
         let cursorStyle = canvas.style.cursor;
 
+        let mouseStart = new Vector(0, 0);
+        let startPosition = this.getPosition();
+
         canvas.addEventListener("mousedown", (event) => {
+          if (event.button !== 1) {
+            return;
+          }
+
           if (!!prevWaitTimerId) {
             clearTimeout(prevWaitTimerId);
           }
 
           prevWaitTimerId = setTimeout(() => {
-            isDragging = mouseComponent.isColliding(this);
+            isPanning = mouseComponent.isColliding(this);
 
-            if (!isDragging) return;
+            if (!isPanning) return;
 
             const rect = canvas.getBoundingClientRect();
             const mousePosition = new Vector(
@@ -58,43 +63,59 @@ export function Draggable() {
               event.clientY - rect.top
             );
 
-            const mouseRenderPosition =
-              viewport.calculateRenderPosition(mousePosition);
-
-            offset = new Vector(
-              mouseRenderPosition.x - this.getPosition().x,
-              mouseRenderPosition.y - this.getPosition().y
-            );
+            mouseStart = new Vector(mousePosition.x, mousePosition.y);
+            startPosition = this.getPosition();
 
             canvas.style.cursor = "grabbing";
           }, 100);
         });
 
         canvas.addEventListener("mousemove", (event) => {
-          if (!isDragging) return;
+          if (!isPanning) return;
 
           const rect = canvas.getBoundingClientRect();
           const mousePosition = new Vector(
             event.clientX - rect.left,
             event.clientY - rect.top
           );
-          const mouseRenderPosition =
-            viewport.calculateRenderPosition(mousePosition);
+
+          const moveChange = new Vector(
+            mousePosition.x - mouseStart.x,
+            mousePosition.y - mouseStart.y
+          );
 
           this.setPosition(
             new Vector(
-              mouseRenderPosition.x - offset.x,
-              mouseRenderPosition.y - offset.y
+              startPosition.x - moveChange.x,
+              startPosition.y - moveChange.y
             )
           );
         });
 
-        canvas.addEventListener("mouseup", () => {
-          if (!isDragging) return;
+        canvas.addEventListener("mouseup", (event) => {
+          if (!isPanning) return;
 
           clearTimeout(prevWaitTimerId);
           canvas.style.cursor = cursorStyle;
-          isDragging = false;
+          isPanning = false;
+
+          const rect = canvas.getBoundingClientRect();
+          const mousePosition = new Vector(
+            event.clientX - rect.left,
+            event.clientY - rect.top
+          );
+
+          const moveChange = new Vector(
+            mousePosition.x - mouseStart.x,
+            mousePosition.y - mouseStart.y
+          );
+
+          this.setPosition(
+            new Vector(
+              startPosition.x - moveChange.x,
+              startPosition.y - moveChange.y
+            )
+          );
         });
       }
     };

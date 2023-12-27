@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { Color, Vector, Text, TextSelection } from "../../atoms";
-import { Constructor } from "../../utils/type";
+import { Color, Vector, Text, TextSelection } from "../atoms";
+import { Constructor } from "../utils/type";
 import {
   TextComponent,
   ComponentMode,
@@ -261,7 +261,6 @@ export function TextContentEditable() {
           );
 
           if (isNotSelectedLine) {
-            console.log("YES!");
             continue;
           }
 

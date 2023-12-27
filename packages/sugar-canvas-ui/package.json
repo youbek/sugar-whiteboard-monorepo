@@ -1,7 +1,7 @@
 {
-  "name": "sugar-whiteboard-core",
+  "name": "sugar-canvas-ui",
   "version": "0.0.1",
-  "description": "Framework agnostic JavaScript whiteboard. The core component of sugarwhiteboard.com",
+  "description": "Library to build html5 canvas applications more easily",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest test",
@@ -9,10 +9,7 @@
     "dev": "tsc --watch"
   },
   "keywords": [
-    "whiteboard",
-    "canvas",
-    "whiteboard",
-    "whiteboard in js"
+    "canvas"
   ],
   "author": "Yusufbek Alimatov",
   "license": "MIT",
@@ -24,7 +21,6 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "uid": "^2.0.2",
-    "sugar-canvas-ui": "*"
+    "uid": "^2.0.2"
   }
 }

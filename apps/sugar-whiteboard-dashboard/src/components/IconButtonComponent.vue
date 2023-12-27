@@ -1,5 +1,5 @@
 
-<script setup>
+<script setup lang="ts">
   import ButtonComponent from './ButtonComponent.vue';
 </script>
 

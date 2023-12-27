@@ -1,0 +1,8 @@
+{
+  "name": "sugar-tsconfigs",
+  "version": "0.0.1",
+  "description": "Reusable TSConfigs",
+  "main": "dist/index.js",
+  "author": "Yusufbek Alimatov",
+  "license": "MIT"
+}

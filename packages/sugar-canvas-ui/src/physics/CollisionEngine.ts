@@ -1,4 +1,4 @@
-import { Projection } from "../../atoms";
+import { Projection } from "../atoms";
 import { Component } from "../components";
 
 export class CollisionEngine {

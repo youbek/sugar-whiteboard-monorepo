@@ -1,4 +1,4 @@
-import { Text, Color } from "../../atoms";
+import { Text, Color } from "../atoms";
 import { Draggable, TextContentEditable } from "../decorators";
 import { DrawContext } from "./Component";
 import { RectComponent } from "./RectComponent";

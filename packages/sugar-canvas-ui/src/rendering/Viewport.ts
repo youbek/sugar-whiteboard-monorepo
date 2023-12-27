@@ -1,4 +1,4 @@
-import { Vector } from "../../atoms";
+import { Vector } from "../atoms";
 
 type ViewportBounds = {
   left: number;
