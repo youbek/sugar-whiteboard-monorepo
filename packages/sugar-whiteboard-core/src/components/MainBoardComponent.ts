@@ -1,10 +1,13 @@
-import { Vector } from "../atoms";
-import { Pannable } from "../decorators";
-import { Viewport } from "../rendering";
-import { Component, DrawContext } from "./Component";
+import {
+  Vector,
+  Pannable,
+  Viewport,
+  Component,
+  DrawContext,
+} from "sugar-canvas-ui";
 
 @Pannable()
-export class ViewportComponent extends Component {
+export class MainBoardComponent extends Component {
   public zIndex = Number.MIN_SAFE_INTEGER;
   public gridSize = new Vector(100, 100);
 
@@ -31,13 +34,10 @@ export class ViewportComponent extends Component {
   }
 
   private drawBackground(context: DrawContext) {
+    const size = this.getSize();
+
     context.ctx.fillStyle = "#F3F3F3";
-    context.ctx.fillRect(
-      0,
-      0,
-      context.viewport.size.x,
-      context.viewport.size.y
-    );
+    context.ctx.fillRect(0, 0, size.x, size.y);
   }
 
   private drawGrid(context: DrawContext) {
@@ -75,7 +75,7 @@ export class ViewportComponent extends Component {
   public getSize() {
     const viewport = Viewport.getCurrentViewport();
 
-    return viewport.size;
+    return new Vector(viewport.canvas.width, viewport.canvas.height);
   }
 
   public getPosition() {
@@ -92,5 +92,7 @@ export class ViewportComponent extends Component {
   public draw(context: DrawContext): void {
     this.drawBackground(context);
     this.drawGrid(context);
+
+    super.draw(context);
   }
 }

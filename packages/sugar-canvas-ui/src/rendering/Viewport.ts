@@ -7,23 +7,22 @@ type ViewportBounds = {
   bottom: number;
 };
 export class Viewport {
+  public canvas: HTMLCanvasElement;
   public pivot = new Vector(0, 0); // top left corner of the viewport
   public position: Vector;
-  public size: Vector; // canvas size
   public maxSize = new Vector(13824, 8936);
   public zoomLevel: number;
 
   private static currentViewport: Viewport;
 
-  constructor(size: Vector) {
+  constructor(canvas: HTMLCanvasElement) {
     if (Viewport.currentViewport) {
       throw new Error("Cannot initialize another Viewport, it already exists.");
     }
 
     Viewport.currentViewport = this;
-
+    this.canvas = canvas;
     this.position = new Vector(0, 0);
-    this.size = size;
     this.zoomLevel = 1;
   }
 

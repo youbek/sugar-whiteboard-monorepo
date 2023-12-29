@@ -6,31 +6,47 @@
 import { Viewport } from "./Viewport";
 import { ComponentsTree } from "./ComponentsTree";
 
-type ScheduleDrawOptions = {
-  canvas: HTMLCanvasElement;
-  componentsTree: ComponentsTree;
+type SugarEngineConfig = {
   viewport: Viewport;
+  componentsTree: ComponentsTree;
 };
 
-type DrawOptions = ScheduleDrawOptions & {
+type DrawOptions = {
   prevFrameEndTime: number;
 };
 
 export class SugarEngine {
   private lastDrawTime: number | null = null;
   private renderingId: number | null = null;
+  private viewport: Viewport;
+  private componentsTree: ComponentsTree;
 
-  constructor() {
+  constructor(config: SugarEngineConfig) {
     this.renderingId = null;
+    this.viewport = config.viewport;
+    this.componentsTree = config.componentsTree;
+
+    this.fixCanvas();
   }
 
-  private draw({
-    canvas,
-    componentsTree,
-    viewport,
-    prevFrameEndTime,
-  }: DrawOptions) {
-    const ctx = canvas.getContext("2d");
+  private fixCanvas() {
+    this.viewport.canvas.style.userSelect = "none";
+
+    this.viewport.canvas.style.width = `${this.viewport.canvas.width}px`;
+    this.viewport.canvas.style.height = `${this.viewport.canvas.height}px`;
+    const scale = window.devicePixelRatio;
+
+    this.viewport.canvas.width = Math.floor(this.viewport.canvas.width * scale);
+    this.viewport.canvas.height = Math.floor(
+      this.viewport.canvas.height * scale
+    );
+
+    const ctx = this.viewport.canvas.getContext("2d");
+    ctx?.scale(scale, scale);
+  }
+
+  private draw({ prevFrameEndTime }: DrawOptions) {
+    const ctx = this.viewport.canvas.getContext("2d");
 
     if (!ctx) {
       console.warn("Could not get canvas context");
@@ -46,30 +62,24 @@ export class SugarEngine {
       this.lastDrawTime = prevFrameEndTime;
     }
 
-    for (let component of componentsTree.getComponents()) {
-      component.draw({
-        canvas: canvas,
-        ctx,
-        viewport: viewport,
-        deltaTime,
-      });
-    }
+    const rootComponent = this.componentsTree.getRootComponent();
 
-    this.scheduleDraw({
-      canvas,
-      componentsTree,
-      viewport,
+    rootComponent?.draw({
+      ctx,
+      viewport: this.viewport,
+      deltaTime,
     });
+
+    this.scheduleDraw();
   }
 
-  scheduleDraw(options: ScheduleDrawOptions) {
+  scheduleDraw() {
     if (this.renderingId) {
       cancelAnimationFrame(this.renderingId);
     }
 
     this.renderingId = requestAnimationFrame((prevFrameEndTime) =>
       this.draw.call(this, {
-        ...options,
         prevFrameEndTime,
       })
     );

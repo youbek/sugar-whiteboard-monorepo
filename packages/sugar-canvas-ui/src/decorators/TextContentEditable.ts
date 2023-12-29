@@ -8,6 +8,7 @@ import {
   DrawContext,
 } from "../components";
 import { ComponentsTree, Viewport } from "../rendering";
+import { KeyboardEvent, MouseEvent } from "../events";
 
 export function TextContentEditable() {
   return function <T extends Constructor<TextComponent>>(Base: T) {
@@ -28,13 +29,8 @@ export function TextContentEditable() {
 
       constructor(...args: any[]) {
         super(...args);
-      }
 
-      public init() {
-        super.init();
-
-        this.handleFocus();
-        this.handleTextEdit();
+        this.mode = ComponentMode.EDIT;
       }
 
       public setCaretIndex(caretIndex: number, selectionStart: number = -1) {
@@ -157,58 +153,6 @@ export function TextContentEditable() {
         if (!this.text.getContent().length) {
           const tree = ComponentsTree.getCurrentComponentsTree();
           tree.removeComponent(this);
-        }
-      }
-
-      public handleFocus() {
-        const viewport = Viewport.getCurrentViewport();
-
-        if (!viewport) {
-          throw new Error(`Current active Viewport not found!`);
-        }
-
-        const mouseComponent = MouseComponent.getCurrentMouse();
-
-        if (!mouseComponent) {
-          throw new Error(`Current active MouseComponent not found!`);
-        }
-
-        // TODO: Refactor it to better get canvas of the whiteboard. Maybe singleton pattern?
-        const canvas = document.getElementsByTagName("canvas")[0];
-
-        if (!canvas) {
-          throw new Error(`SugarWhiteboard canvas not found!`);
-        }
-
-        canvas.addEventListener("dblclick", (event) => {
-          event.preventDefault();
-
-          const hasClicked = mouseComponent.isColliding(this);
-
-          if (hasClicked) {
-            this.mode = ComponentMode.EDIT;
-          } else {
-            this.exitEditMode();
-          }
-        });
-
-        canvas.addEventListener("click", (event) => {
-          event.preventDefault();
-
-          const hasClicked = mouseComponent.isColliding(this);
-
-          if (!hasClicked) {
-            this.exitEditMode();
-          }
-        });
-
-        this.mode = ComponentMode.EDIT;
-
-        if (
-          document.activeElement &&
-          document.activeElement instanceof HTMLElement
-        ) {
-          document.activeElement.blur();
         }
       }
 
@@ -390,94 +334,93 @@ export function TextContentEditable() {
         }
       }
 
-      public handleTextEdit() {
-        const viewport = Viewport.getCurrentViewport();
+      public handleMouseDblClickEvent(): void {
+        this.mode = ComponentMode.EDIT;
+      }
 
-        if (!viewport) {
-          throw new Error(`Current active Viewport not found!`);
+      public handleKeyboardDownEvent(event: KeyboardEvent): void {
+        if (this.mode !== ComponentMode.EDIT) return;
+
+        this.freezeCursorBlinking();
+        const key = event.key;
+
+        if (key === "Escape") {
+          this.resetToPrevState();
+          this.exitEditMode();
+          return;
         }
 
-        window.addEventListener("keydown", (event: KeyboardEvent) => {
-          if (this.mode !== ComponentMode.EDIT) return;
-
-          this.freezeCursorBlinking();
-
-          const key = event.key;
-
-          if (key === "Escape") {
-            this.resetToPrevState();
-            this.exitEditMode();
-            return;
-          }
-
-          if (key === "Backspace" || key === "Delete") {
-            this.deleteText();
-            return;
-          }
-
-          if (key === "Space") {
-            this.insertText(" ");
-            return;
-          }
-
-          if (key === "ArrowLeft") {
-            this.moveCaretHorizontal(-1, event.shiftKey);
-            return;
-          }
-
-          if (key === "ArrowRight") {
-            this.moveCaretHorizontal(1, event.shiftKey);
-            return;
-          }
-
-          if (key === "ArrowUp") {
-            this.moveCaretVertical(1, event.shiftKey);
-            return;
-          }
-
-          if (key === "ArrowDown") {
-            this.moveCaretVertical(-1, event.shiftKey);
-            return;
-          }
-
-          if (key === "Enter" || key === "Return") {
-            if (event.shiftKey) {
-              this.insertText("\n");
-              return;
-            }
-
-            this.exitEditMode();
-            return;
-          }
-
-          if (key === "a" && event.ctrlKey) {
-            this.setCaretIndex(this.text.getContent().length, 0);
-            return;
-          }
-
-          if (key === "c" && event.ctrlKey && this.selectionStart > -1) {
-            navigator.clipboard.writeText(
-              this.text.getContent(
-                new TextSelection(this.selectionStart, this.caretIndex)
-              )
-            );
-            return;
-          }
-
-          if (key === "v" && event.ctrlKey) {
-            navigator.clipboard.readText().then((text) => {
-              this.insertText(text);
-            });
-            return;
-          }
-
-          if (key === "Shift" || key === "Alt" || key === "Control") {
-            return;
-          }
-
-          this.insertText(event.key);
+        if (key === "Backspace" || key === "Delete") {
+          this.deleteText();
           return;
-        });
+        }
+
+        if (key === "Space") {
+          this.insertText(" ");
+          return;
+        }
+
+        if (key === "ArrowLeft") {
+          this.moveCaretHorizontal(-1, event.shiftKey);
+          return;
+        }
+
+        if (key === "ArrowRight") {
+          this.moveCaretHorizontal(1, event.shiftKey);
+          return;
+        }
+
+        if (key === "ArrowUp") {
+          this.moveCaretVertical(1, event.shiftKey);
+          return;
+        }
+
+        if (key === "ArrowDown") {
+          this.moveCaretVertical(-1, event.shiftKey);
+          return;
+        }
+
+        if (key === "Enter" || key === "Return") {
+          if (event.shiftKey) {
+            this.insertText("\n");
+            return;
+          }
+
+          this.exitEditMode();
+          return;
+        }
+
+        if (key === "a" && event.ctrlKey) {
+          this.setCaretIndex(this.text.getContent().length, 0);
+          return;
+        }
+
+        if (key === "c" && event.ctrlKey && this.selectionStart > -1) {
+          navigator.clipboard.writeText(
+            this.text.getContent(
+              new TextSelection(this.selectionStart, this.caretIndex)
+            )
+          );
+          return;
+        }
+
+        if (key === "v" && event.ctrlKey) {
+          navigator.clipboard.readText().then((text) => {
+            this.insertText(text);
+          });
+          return;
+        }
+
+        if (key === "Shift" || key === "Alt" || key === "Control") {
+          return;
+        }
+
+        this.insertText(event.key);
+        return;
+      }
+
+      public handleMouseClickOutsideEvent(): void {
+        this.exitEditMode();
       }
     };
   };

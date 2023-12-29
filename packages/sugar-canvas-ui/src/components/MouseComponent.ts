@@ -1,6 +1,5 @@
 import { Vector } from "../atoms";
 import { FollowMousePosition } from "../decorators/FollowMousePosition";
-import { ComponentsTree } from "../rendering";
 import { Component, DrawContext } from "./Component";
 
 @FollowMousePosition()
@@ -38,32 +37,9 @@ export class MouseComponent extends Component {
     ];
   }
 
-  public isColliding(other: Component) {
-    const componentsTree = ComponentsTree.getCurrentComponentsTree();
-    const isCollidingWithOtherComponent = super.isColliding(other);
-
-    if (!isCollidingWithOtherComponent) return false;
-
-    const otherComponentIndexInTree = componentsTree.getIndex(other);
-
-    const higherZIndexCollidingComponent = componentsTree
-      .getComponents()
-      .find(
-        (component, index) =>
-          component.id !== other.id &&
-          component.id !== this.id &&
-          (component.zIndex > other.zIndex ||
-            (component.zIndex === other.zIndex &&
-              index > otherComponentIndexInTree)) &&
-          super.isColliding(component)
-      );
-
-    if (higherZIndexCollidingComponent) return false;
-
-    return true;
-  }
-
   public draw(context: DrawContext): void {
+    super.draw(context);
+
     context.ctx.fillStyle = "red";
     context.ctx.fillRect(
       this.position.x,

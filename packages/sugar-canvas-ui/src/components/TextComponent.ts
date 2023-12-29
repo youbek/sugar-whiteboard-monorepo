@@ -54,6 +54,8 @@ export class TextComponent extends RectComponent {
   }
 
   public draw(context: DrawContext): void {
+    super.draw(context);
+
     if (!this.text.getContent()) {
       this.drawPlaceholder(context);
     } else {

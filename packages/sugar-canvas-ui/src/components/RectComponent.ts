@@ -35,6 +35,8 @@ export class RectComponent extends Component {
   }
 
   public draw(context: DrawContext): void {
+    super.draw(context);
+
     context.ctx.fillStyle = this.backgroundColor.toString();
     this.lastRenderPosition = context.viewport.calculateRenderPosition(
       this.position

@@ -1,36 +1,12 @@
 import {
-  Vector,
-  SugarEngine,
-  Viewport,
-  ViewportComponent,
   Component,
-  MouseComponent,
-  ComponentsTree,
   TextComponent,
+  SugarCanvasClientApp,
 } from "sugar-canvas-ui";
+import { MainBoardComponent } from "./components";
 
 export class Whiteboard {
-  private viewport: Viewport | null = null;
-  private engine: SugarEngine | null = null;
-  private viewportComponent: ViewportComponent | null = null;
-  private mouseComponent: MouseComponent | null = null;
-  private componentsTree: ComponentsTree;
-
-  constructor() {
-    this.componentsTree = new ComponentsTree();
-  }
-
-  private fixCanvasBlur(canvas: HTMLCanvasElement) {
-    canvas.style.width = `${canvas.width}px`;
-    canvas.style.height = `${canvas.height}px`;
-    const scale = window.devicePixelRatio;
-
-    canvas.width = Math.floor(canvas.width * scale);
-    canvas.height = Math.floor(canvas.height * scale);
-
-    const ctx = canvas.getContext("2d");
-    ctx?.scale(scale, scale);
-  }
+  private sugarCanvasApp: SugarCanvasClientApp | null = null;
 
   public addTextComponent() {
     const textComponent = new TextComponent();
@@ -38,35 +14,20 @@ export class Whiteboard {
   }
 
   public addComponent(component: Component) {
-    component.init();
-    this.componentsTree?.addComponent(component);
+    this.sugarCanvasApp?.addComponent(component);
   }
 
   public removeComponent(component: Component) {
-    this.componentsTree?.removeComponent(component);
+    this.sugarCanvasApp?.removeComponent(component);
   }
 
   public init(canvas: HTMLCanvasElement) {
-    canvas.width = window.innerWidth; // make this customizable by the client code
+    canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    this.fixCanvasBlur(canvas);
-    canvas.style.userSelect = "none";
-
-    this.viewport = new Viewport(new Vector(canvas.width, canvas.height));
-
-    this.viewportComponent = new ViewportComponent();
-    this.mouseComponent = new MouseComponent();
-
-    this.addComponent(this.viewportComponent);
-    this.addComponent(this.mouseComponent);
-
-    this.engine = new SugarEngine();
-
-    this.engine.scheduleDraw({
+    this.sugarCanvasApp = new SugarCanvasClientApp({
       canvas,
-      componentsTree: this.componentsTree,
-      viewport: this.viewport,
+      rootComponent: new MainBoardComponent(),
     });
   }
 }

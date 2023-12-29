@@ -2,6 +2,7 @@ import { uid } from "uid";
 import { Vector } from "../atoms";
 import { Viewport } from "../rendering/Viewport";
 import { CollisionEngine } from "../physics/CollisionEngine";
+import { MouseEvent, KeyboardEvent } from "../events";
 
 export enum ComponentMode {
   VIEW = "VIEW",
@@ -10,7 +11,6 @@ export enum ComponentMode {
 }
 
 export type DrawContext = {
-  canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   viewport: Viewport;
   deltaTime: number;
@@ -31,11 +31,10 @@ export abstract class Component {
 
   public mode: ComponentMode = ComponentMode.VIEW;
 
+  public children: Component[] | null = null;
+
   constructor() {
     this.id = uid();
-  }
-
-  public init() {
     this.lastRenderPosition = this.position;
   }
 
@@ -57,6 +56,26 @@ export abstract class Component {
 
   public isColliding(other: Component): boolean {
     return CollisionEngine.checkCollision(this, other);
+  }
+
+  public addChild(child: Component) {
+    if (!this.children) {
+      this.children = [child];
+    } else {
+      this.children.push(child);
+    }
+  }
+
+  public removeChild(removingChild: Component) {
+    if (!this.children?.length) return;
+
+    return (this.children = this.children.filter(
+      (child) => removingChild.id !== child.id
+    ));
+  }
+
+  public getChildren() {
+    return this.children;
   }
 
   public draw(context: DrawContext): void {
@@ -81,5 +100,25 @@ export abstract class Component {
         context.ctx.stroke();
       }
     }
+
+    if (!this.children) return;
+
+    for (const child of this.children) {
+      child.draw(context);
+    }
   }
+
+  public handleMouseClickEvent(event: MouseEvent) {}
+
+  public handleMouseClickOutsideEvent(event: MouseEvent) {}
+
+  public handleMouseDblClickEvent(event: MouseEvent) {}
+
+  public handleMouseUpEvent(event: MouseEvent) {}
+
+  public handleMouseDownEvent(event: MouseEvent) {}
+
+  public handleMouseMoveEvent(event: MouseEvent) {}
+
+  public handleKeyboardDownEvent(event: KeyboardEvent) {}
 }

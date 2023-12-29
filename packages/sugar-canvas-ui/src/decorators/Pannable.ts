@@ -2,121 +2,82 @@ import { Vector } from "../atoms";
 import { Constructor } from "../utils/type";
 import { Component, MouseComponent } from "../components";
 import { Viewport } from "../rendering/Viewport";
+import { MouseEvent } from "src/events";
+
+type PanningState = {
+  isPanning: boolean;
+  startWaitTimerId: any;
+  startPosition: Vector;
+  mouseStartPosition: Vector;
+};
 
 export function Pannable() {
   return function <T extends Constructor<Component>>(BaseComponent: T) {
     return class PannableComponent extends BaseComponent {
+      public panningState: PanningState = {
+        isPanning: false,
+        mouseStartPosition: new Vector(0, 0),
+        startPosition: new Vector(0, 0),
+        startWaitTimerId: undefined,
+      };
+
       constructor(...args: any[]) {
         super(...(args as []));
       }
 
-      public init() {
-        super.init();
+      public handleMouseDownEvent(event: MouseEvent): void {
+        if (event.mouseButton !== 1) {
+          return;
+        }
 
-        this.setupPanning();
+        event.stopPropagation();
+
+        if (!!this.panningState.startWaitTimerId) {
+          clearTimeout(this.panningState.startWaitTimerId);
+        }
+
+        this.panningState.startWaitTimerId = setTimeout(() => {
+          this.panningState.mouseStartPosition = event.mouseCanvasPosition;
+          this.panningState.startPosition = this.getPosition();
+          this.panningState.isPanning = true;
+        }, 100);
       }
 
-      public setupPanning() {
-        const viewport = Viewport.getCurrentViewport();
+      public handleMouseMoveEvent(event: MouseEvent): void {
+        if (!this.panningState.isPanning) return;
 
-        if (!viewport) {
-          throw new Error(`Current active Viewport not found!`);
-        }
+        const moveChange = new Vector(
+          event.mouseCanvasPosition.x - this.panningState.mouseStartPosition.x,
+          event.mouseCanvasPosition.y - this.panningState.mouseStartPosition.y
+        );
 
-        const mouseComponent = MouseComponent.getCurrentMouse();
+        this.setPosition(
+          new Vector(
+            this.panningState.startPosition.x - moveChange.x,
+            this.panningState.startPosition.y - moveChange.y
+          )
+        );
+      }
 
-        if (!mouseComponent) {
-          throw new Error(`Current active MouseComponent not found!`);
-        }
+      public handleMouseUpEvent(event: MouseEvent): void {
+        if (!this.panningState.isPanning) return;
 
-        // TODO: Refactor it to better get canvas of the whiteboard. Maybe singleton pattern?
-        const canvas = document.getElementsByTagName("canvas")[0];
+        event.stopPropagation();
 
-        if (!canvas) {
-          throw new Error(`SugarWhiteboard canvas not found!`);
-        }
+        clearTimeout(this.panningState.startWaitTimerId);
+        this.panningState.isPanning = false;
 
-        let prevWaitTimerId: any = undefined;
-        let isPanning = false;
-        let cursorStyle = canvas.style.cursor;
+        const moveChange = new Vector(
+          event.mouseCanvasPosition.x - this.panningState.mouseStartPosition.x,
+          event.mouseCanvasPosition.y - this.panningState.mouseStartPosition.y
+        );
 
-        let mouseStart = new Vector(0, 0);
-        let startPosition = this.getPosition();
-
-        canvas.addEventListener("mousedown", (event) => {
-          if (event.button !== 1) {
-            return;
-          }
-
-          if (!!prevWaitTimerId) {
-            clearTimeout(prevWaitTimerId);
-          }
-
-          prevWaitTimerId = setTimeout(() => {
-            isPanning = mouseComponent.isColliding(this);
-
-            if (!isPanning) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const mousePosition = new Vector(
-              event.clientX - rect.left,
-              event.clientY - rect.top
-            );
-
-            mouseStart = new Vector(mousePosition.x, mousePosition.y);
-            startPosition = this.getPosition();
-
-            canvas.style.cursor = "grabbing";
-          }, 100);
-        });
-
-        canvas.addEventListener("mousemove", (event) => {
-          if (!isPanning) return;
-
-          const rect = canvas.getBoundingClientRect();
-          const mousePosition = new Vector(
-            event.clientX - rect.left,
-            event.clientY - rect.top
-          );
-
-          const moveChange = new Vector(
-            mousePosition.x - mouseStart.x,
-            mousePosition.y - mouseStart.y
-          );
-
-          this.setPosition(
-            new Vector(
-              startPosition.x - moveChange.x,
-              startPosition.y - moveChange.y
-            )
-          );
-        });
-
-        canvas.addEventListener("mouseup", (event) => {
-          if (!isPanning) return;
-
-          clearTimeout(prevWaitTimerId);
-          canvas.style.cursor = cursorStyle;
-          isPanning = false;
-
-          const rect = canvas.getBoundingClientRect();
-          const mousePosition = new Vector(
-            event.clientX - rect.left,
-            event.clientY - rect.top
-          );
-
-          const moveChange = new Vector(
-            mousePosition.x - mouseStart.x,
-            mousePosition.y - mouseStart.y
-          );
-
-          this.setPosition(
-            new Vector(
-              startPosition.x - moveChange.x,
-              startPosition.y - moveChange.y
-            )
-          );
-        });
+        this.setPosition(
+          new Vector(
+            this.panningState.startPosition.x - moveChange.x,
+            this.panningState.startPosition.y - moveChange.y
+          )
+        );
       }
     };
   };
