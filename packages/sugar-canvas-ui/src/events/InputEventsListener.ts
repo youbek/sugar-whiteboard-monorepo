@@ -133,7 +133,7 @@ export class InputEventsListener {
       for (const currentComponent of this.componentsTree.traverse()) {
         const isColliding = this.mouseComponent.isColliding(currentComponent);
 
-        if (!isColliding) continue;
+        if (!isColliding) return;
 
         chain.push(currentComponent);
       }
