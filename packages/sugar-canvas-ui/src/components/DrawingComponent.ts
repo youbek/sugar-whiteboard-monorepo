@@ -1,12 +1,12 @@
 import { MouseEvent } from "../events";
 import { ComponentMode, DrawContext } from "./Component";
 import { RectComponent } from "./RectComponent";
-import { Color, Vector } from "../atoms";
+import { Color, Vector, Path } from "../atoms";
 import { Viewport } from "../rendering";
 
 export class DrawingComponent extends RectComponent {
   private isDrawing = false;
-  private paths: Vector[] = [];
+  private path: Path = new Path();
   private pathBoundary: {
     left: number;
     right: number;
@@ -47,7 +47,15 @@ export class DrawingComponent extends RectComponent {
       const y = this.pathBoundary.bottom - this.pathBoundary.top;
 
       this.size = new Vector(x, y);
-      this.position = new Vector(this.pathBoundary.left, this.pathBoundary.top);
+
+      const pivot = new Vector(this.pathBoundary.left, this.pathBoundary.top);
+
+      this.position = new Vector(
+        pivot.x + this.position.x,
+        pivot.y + this.position.y
+      );
+
+      this.path.setPivot(pivot);
     }
   }
 
@@ -67,17 +75,22 @@ export class DrawingComponent extends RectComponent {
     context.ctx.lineCap = "round";
     context.ctx.strokeStyle = this.penColor.toString();
     context.ctx.lineWidth = this.penWidth;
-    for (let i = 0; i < this.paths.length - 1; i++) {
+
+    for (const [currentNode, nextNode] of this.path.traverse()) {
       context.ctx.beginPath();
       const moveToPosition = context.viewport.calculateRenderPosition(
-        this.paths[i]
+        new Vector(
+          currentNode.x + this.position.x,
+          currentNode.y + this.position.y
+        )
       );
       context.ctx.moveTo(moveToPosition.x, moveToPosition.y);
 
-      const lineToPosition = context.viewport.calculateRenderPosition(
-        this.paths[i + 1]
+      const lineToPosition = context.viewport.calculateRenderPosition(nextNode);
+      context.ctx.lineTo(
+        lineToPosition.x + this.position.x,
+        lineToPosition.y + this.position.y
       );
-      context.ctx.lineTo(lineToPosition.x, lineToPosition.y);
 
       context.ctx.closePath();
       context.ctx.stroke();
@@ -93,11 +106,8 @@ export class DrawingComponent extends RectComponent {
     if (this.mode !== ComponentMode.EDIT) return;
 
     event.stopPropagation();
-    this.paths.push(
-      new Vector(
-        event.mouseCanvasPosition.x - this.position.x,
-        event.mouseRenderPosition.y - this.position.y
-      )
+    this.path.add(
+      new Vector(event.mouseCanvasPosition.x, event.mouseCanvasPosition.y)
     );
     this.isDrawing = true;
   }
@@ -113,34 +123,34 @@ export class DrawingComponent extends RectComponent {
     if (this.mode !== ComponentMode.EDIT || !this.isDrawing) return;
 
     event.stopPropagation();
-    const path = new Vector(
-      event.mouseCanvasPosition.x - this.position.x,
-      event.mouseRenderPosition.y - this.position.y
+    const node = new Vector(
+      event.mouseCanvasPosition.x,
+      event.mouseCanvasPosition.y
     );
-    this.paths.push(path);
+    this.path.add(node);
 
     if (!this.pathBoundary) {
       this.pathBoundary = {
-        left: path.x,
-        right: path.x,
-        top: path.y,
-        bottom: path.y,
+        left: node.x,
+        right: node.x,
+        top: node.y,
+        bottom: node.y,
       };
     } else {
-      if (path.x < this.pathBoundary.left) {
-        this.pathBoundary.left = path.x;
+      if (node.x < this.pathBoundary.left) {
+        this.pathBoundary.left = node.x;
       }
 
-      if (path.x > this.pathBoundary.right) {
-        this.pathBoundary.right = path.x;
+      if (node.x > this.pathBoundary.right) {
+        this.pathBoundary.right = node.x;
       }
 
-      if (path.y > this.pathBoundary.bottom) {
-        this.pathBoundary.bottom = path.y;
+      if (node.y > this.pathBoundary.bottom) {
+        this.pathBoundary.bottom = node.y;
       }
 
-      if (path.y < this.pathBoundary.top) {
-        this.pathBoundary.top = path.y;
+      if (node.y < this.pathBoundary.top) {
+        this.pathBoundary.top = node.y;
       }
     }
   }

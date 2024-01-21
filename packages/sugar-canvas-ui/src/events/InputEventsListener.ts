@@ -48,6 +48,9 @@ export class InputEventsListener {
 
       if (!clickInsideChain.length && !clickOutsideChain.length) return;
 
+      clickInsideChain.reverse();
+      clickOutsideChain.reverse();
+
       const rect = this.viewport.canvas.getBoundingClientRect();
       const mouseCanvasPosition = new Vector(
         domEvent.clientX - rect.left,
@@ -100,6 +103,7 @@ export class InputEventsListener {
       }
 
       if (!chain.length) return;
+      chain.reverse();
 
       const rect = this.viewport.canvas.getBoundingClientRect();
       const mouseCanvasPosition = new Vector(
@@ -154,6 +158,7 @@ export class InputEventsListener {
         mouseCanvasPosition,
         mouseButton: domEvent.button as MouseButton,
       });
+      chain.reverse();
 
       for (const component of chain) {
         component.handleMouseDownEvent(mouseEvent);
@@ -178,6 +183,7 @@ export class InputEventsListener {
       }
 
       if (!chain.length) return;
+      chain.reverse();
 
       const rect = this.viewport.canvas.getBoundingClientRect();
       const mouseCanvasPosition = new Vector(
