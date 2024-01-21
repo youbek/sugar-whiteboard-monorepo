@@ -164,4 +164,6 @@ export abstract class Component {
   public handleMouseMoveEvent(event: MouseEvent) {}
 
   public handleKeyboardDownEvent(event: KeyboardEvent) {}
+
+  public handleKeyboardUpEvent(event: KeyboardEvent) {}
 }

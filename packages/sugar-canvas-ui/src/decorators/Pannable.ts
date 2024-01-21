@@ -2,7 +2,7 @@ import { Vector } from "../atoms";
 import { Constructor } from "../utils/type";
 import { Component, MouseComponent } from "../components";
 import { Viewport } from "../rendering/Viewport";
-import { MouseEvent } from "src/events";
+import { KeyboardEvent, MouseEvent } from "src/events";
 
 type PanningState = {
   isPanning: boolean;
@@ -14,6 +14,7 @@ type PanningState = {
 export function Pannable() {
   return function <T extends Constructor<Component>>(BaseComponent: T) {
     return class PannableComponent extends BaseComponent {
+      public altPressed = false;
       public panningState: PanningState = {
         isPanning: false,
         mouseStartPosition: new Vector(0, 0),
@@ -26,7 +27,7 @@ export function Pannable() {
       }
 
       public handleMouseDownEvent(event: MouseEvent): void {
-        if (event.mouseButton !== 0) {
+        if (event.mouseButton !== 0 || !this.altPressed) {
           return;
         }
 
@@ -78,6 +79,18 @@ export function Pannable() {
             this.panningState.startPosition.y - moveChange.y
           )
         );
+      }
+
+      public handleKeyboardDownEvent(event: KeyboardEvent): void {
+        if (!event.altKey) return;
+
+        this.altPressed = true;
+      }
+
+      public handleKeyboardUpEvent(event: KeyboardEvent): void {
+        if (!event.altKey) return;
+
+        this.altPressed = false;
       }
     };
   };

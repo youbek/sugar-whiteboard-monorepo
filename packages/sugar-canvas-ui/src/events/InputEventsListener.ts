@@ -29,6 +29,7 @@ export class InputEventsListener {
     this.listenMouseDown();
     this.listenMouseMove();
     this.listenKeyboardDown();
+    this.listenKeyboardUp();
   }
 
   private listenMouseClick() {
@@ -258,9 +259,30 @@ export class InputEventsListener {
           shiftKey: domEvent.shiftKey,
         });
 
-        if (component.mode === ComponentMode.VIEW) continue;
-
         component.handleKeyboardDownEvent(keyboardEvent);
+      }
+    });
+  }
+
+  private listenKeyboardUp() {
+    window.addEventListener("keyup", (domEvent) => {
+      if (
+        document.activeElement &&
+        document.activeElement instanceof HTMLElement
+      ) {
+        document.activeElement.blur();
+      }
+
+      for (const component of this.componentsTree.traverse()) {
+        const keyboardEvent = new KeyboardEvent({
+          key: domEvent.key,
+          altKey: domEvent.altKey,
+          ctrlKey: domEvent.ctrlKey,
+          metaKey: domEvent.metaKey,
+          shiftKey: domEvent.shiftKey,
+        });
+
+        component.handleKeyboardUpEvent(keyboardEvent);
       }
     });
   }
