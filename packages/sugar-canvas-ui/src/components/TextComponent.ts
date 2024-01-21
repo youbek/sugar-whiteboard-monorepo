@@ -13,44 +13,41 @@ export class TextComponent extends RectComponent {
   public fontSize = "20px";
   public fontWeight = "normal";
 
-  public drawPlaceholder(context: DrawContext) {
-    context.ctx.fillStyle = this.placeholderColor.toString();
-    this.lastRenderPosition = context.viewport.calculateRenderPosition(
-      this.position
-    );
-
-    context.ctx.font = `300 ${this.fontSize} monospace`;
-    context.ctx.fillText(
-      "Type something",
-      this.lastRenderPosition.x,
-      this.lastRenderPosition.y
-    );
-  }
-
-  public drawText(context: DrawContext) {
-    context.ctx.font = `300 ${this.fontSize} monospace`;
-    context.ctx.fillStyle = this.color.toString();
-
+  public drawText(context: DrawContext, text: Text) {
     this.lastRenderPosition = context.viewport.calculateRenderPosition(
       this.position
     );
 
     const {
       longestLineMetrics: { fontBoundingBoxAscent, fontBoundingBoxDescent },
-    } = this.text.multiLineTextMetrics(context.ctx);
+    } = text.multiLineTextMetrics(context.ctx);
 
     const lineHeight = fontBoundingBoxAscent + fontBoundingBoxDescent;
 
-    const lines = this.text.getLines();
+    const lines = text.getLines();
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
       context.ctx.fillText(
         line.content,
         this.lastRenderPosition.x,
-        this.lastRenderPosition.y + lineHeight * i
+        this.lastRenderPosition.y + lineHeight * i + lineHeight
       );
     }
+  }
+
+  public drawPlaceholder(context: DrawContext) {
+    context.ctx.fillStyle = this.placeholderColor.toString();
+    context.ctx.font = `300 ${this.fontSize} monospace`;
+
+    this.drawText(context, new Text("Type something"));
+  }
+
+  public drawContentText(context: DrawContext) {
+    context.ctx.font = `300 ${this.fontSize} monospace`;
+    context.ctx.fillStyle = this.color.toString();
+
+    this.drawText(context, this.text);
   }
 
   public draw(context: DrawContext): void {
@@ -59,7 +56,7 @@ export class TextComponent extends RectComponent {
     if (!this.text.getContent()) {
       this.drawPlaceholder(context);
     } else {
-      this.drawText(context);
+      this.drawContentText(context);
     }
   }
 }

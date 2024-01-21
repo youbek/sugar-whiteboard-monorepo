@@ -34,6 +34,7 @@ export function Draggable() {
         }
 
         event.stopPropagation();
+
         this.dragState.startWaitTimerId = setTimeout(() => {
           this.dragState.dragOffset = new Vector(
             event.mouseRenderPosition.x - this.getPosition().x,

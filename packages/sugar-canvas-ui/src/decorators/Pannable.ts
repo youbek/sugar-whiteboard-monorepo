@@ -26,6 +26,8 @@ export function Pannable() {
       }
 
       public handleMouseDownEvent(event: MouseEvent): void {
+        console.log("FUUUCK!");
+
         if (event.mouseButton !== 1) {
           return;
         }

@@ -1,8 +1,15 @@
 import { uid } from "uid";
-import { Vector } from "../atoms";
+import { Color, Vector } from "../atoms";
 import { Viewport } from "../rendering/Viewport";
 import { CollisionEngine } from "../physics/CollisionEngine";
 import { MouseEvent, KeyboardEvent } from "../events";
+
+export type ComponentBoundary = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 
 export enum ComponentMode {
   VIEW = "VIEW",
@@ -28,6 +35,7 @@ export abstract class Component {
   public visible: boolean = true;
   public zIndex: number = 0;
   public showDebugInfo: boolean = false;
+  public selectModeBoundaryColor = new Color(66, 195, 255, 1);
 
   public mode: ComponentMode = ComponentMode.VIEW;
 
@@ -44,6 +52,20 @@ export abstract class Component {
 
   public get edges(): Vector[] {
     return [];
+  }
+
+  public get boundary(): ComponentBoundary {
+    const left = this.position.x - this.pivot.x;
+    const right = left + this.size.x;
+    const top = this.position.y - this.pivot.y;
+    const bottom = top + this.size.y;
+
+    return {
+      left,
+      right,
+      top,
+      bottom,
+    };
   }
 
   public getPosition() {
@@ -78,7 +100,28 @@ export abstract class Component {
     return this.children;
   }
 
+  public drawEditBorder(context: DrawContext) {
+    const renderPosition = context.viewport.calculateRenderPosition(
+      new Vector(this.boundary.left, this.boundary.top)
+    );
+
+    context.ctx.strokeStyle = this.selectModeBoundaryColor.toString();
+    context.ctx.strokeRect(
+      renderPosition.x,
+      renderPosition.y,
+      this.size.x,
+      this.size.y
+    );
+  }
+
   public draw(context: DrawContext): void {
+    if (
+      this.mode === ComponentMode.SELECT ||
+      this.mode === ComponentMode.EDIT
+    ) {
+      this.drawEditBorder(context);
+    }
+
     if (this.showDebugInfo) {
       for (let i = 0; i < this.vertices.length; i++) {
         const start = this.vertices[i];

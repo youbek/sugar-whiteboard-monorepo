@@ -20,7 +20,6 @@ export function TextContentEditable() {
       public selectionStart = -1;
 
       public caretColor = new Color(0, 0, 0, 1);
-      public editBorderColor = new Color(66, 195, 255, 1);
       public selectionColor = new Color(66, 195, 255, 0.2);
 
       public blinkDelay = 0.5; // 0.5 second
@@ -156,7 +155,7 @@ export function TextContentEditable() {
         }
       }
 
-      public drawEditBorder(context: DrawContext) {
+      public calculateSize(context: DrawContext) {
         const textMetrics = this.text.multiLineTextMetrics(
           context.ctx,
           this.placeholderText || "Dummy Text"
@@ -167,22 +166,6 @@ export function TextContentEditable() {
           (textMetrics.longestLineMetrics.fontBoundingBoxAscent +
             textMetrics.longestLineMetrics.fontBoundingBoxDescent) *
             textMetrics.lines.length
-        );
-
-        const renderPosition = context.viewport.calculateRenderPosition(
-          new Vector(
-            this.position.x,
-            this.position.y -
-              textMetrics.longestLineMetrics.fontBoundingBoxAscent
-          )
-        );
-
-        context.ctx.strokeStyle = this.editBorderColor.toString();
-        context.ctx.strokeRect(
-          renderPosition.x,
-          renderPosition.y,
-          borderSize.x,
-          borderSize.y
         );
 
         this.size = borderSize;
@@ -258,11 +241,7 @@ export function TextContentEditable() {
           );
 
           const renderPosition = context.viewport.calculateRenderPosition(
-            new Vector(
-              this.position.x + offsetTextBoxSize.x,
-              this.position.y -
-                lineSelectionMetrics.longestLineMetrics.fontBoundingBoxAscent
-            )
+            new Vector(this.position.x + offsetTextBoxSize.x, this.position.y)
           );
 
           context.ctx.fillStyle = this.selectionColor.toString();
@@ -300,7 +279,7 @@ export function TextContentEditable() {
               (textToCursor.getContent()
                 ? textMetrics.lastLineMetrics.width
                 : 0),
-            this.position.y - textMetrics.lastLineMetrics.fontBoundingBoxAscent
+            this.position.y
           );
 
           context.ctx.fillStyle = this.caretColor.toString();
@@ -323,11 +302,11 @@ export function TextContentEditable() {
       }
 
       public draw(context: DrawContext): void {
+        this.calculateSize(context);
         super.draw(context);
 
         if (this.mode === ComponentMode.EDIT) {
           this.drawSelection(context);
-          this.drawEditBorder(context);
           this.drawCursor(context);
         } else {
           this.blinkTimer = 0;
