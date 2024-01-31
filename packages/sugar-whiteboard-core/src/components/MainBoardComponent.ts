@@ -1,12 +1,5 @@
-import {
-  Vector,
-  Pannable,
-  Viewport,
-  Component,
-  DrawContext,
-} from "sugar-canvas-ui";
+import { Vector, Viewport, Component, DrawContext } from "sugar-canvas-ui";
 
-@Pannable()
 export class MainBoardComponent extends Component {
   public zIndex = Number.MIN_SAFE_INTEGER;
   public gridSize = new Vector(100, 100);

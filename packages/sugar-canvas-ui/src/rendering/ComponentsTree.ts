@@ -47,6 +47,18 @@ export class ComponentsTree {
     }
   }
 
+  public findComponentOfType<T extends Component>(
+    Type: new (...args: any[]) => T
+  ): T | null {
+    for (const component of this.traverse()) {
+      if (component instanceof Type) {
+        return component as unknown as T;
+      }
+    }
+
+    return null;
+  }
+
   public static getCurrentComponentsTree() {
     return this.currentComponentsTree;
   }

@@ -77,6 +77,8 @@ export abstract class Component {
   }
 
   public isColliding(other: Component): boolean {
+    if (this === other) return false;
+
     return CollisionEngine.checkCollision(this, other);
   }
 
@@ -150,20 +152,4 @@ export abstract class Component {
       child.draw(context);
     }
   }
-
-  public handleMouseClickEvent(event: MouseEvent) {}
-
-  public handleMouseClickOutsideEvent(event: MouseEvent) {}
-
-  public handleMouseDblClickEvent(event: MouseEvent) {}
-
-  public handleMouseUpEvent(event: MouseEvent) {}
-
-  public handleMouseDownEvent(event: MouseEvent) {}
-
-  public handleMouseMoveEvent(event: MouseEvent) {}
-
-  public handleKeyboardDownEvent(event: KeyboardEvent) {}
-
-  public handleKeyboardUpEvent(event: KeyboardEvent) {}
 }

@@ -1,8 +1,6 @@
 import { Color, Vector } from "../atoms";
 import { Component, DrawContext } from "./Component";
-import { Draggable } from "../decorators";
 
-@Draggable()
 export class RectComponent extends Component {
   public color: Color = new Color(0, 0, 0, 0);
   public backgroundColor: Color = new Color(0, 0, 0, 0);

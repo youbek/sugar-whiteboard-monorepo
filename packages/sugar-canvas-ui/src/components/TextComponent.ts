@@ -1,9 +1,8 @@
 import { Text, Color } from "../atoms";
-import { Draggable, TextContentEditable } from "../decorators";
+import { TextContentEditable } from "../decorators";
 import { DrawContext } from "./Component";
 import { RectComponent } from "./RectComponent";
 
-@Draggable()
 @TextContentEditable()
 export class TextComponent extends RectComponent {
   public text = new Text();

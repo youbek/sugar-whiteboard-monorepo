@@ -1,8 +1,16 @@
 import { ComponentsTree, Viewport } from "../rendering";
 import { Component, ComponentMode, MouseComponent } from "../components";
-import { MouseButton, MouseEvent } from "./MouseEvent";
-import { KeyboardEvent } from "./KeyboardEvent";
+import { MouseButton, MouseEvent, MouseEventType } from "./MouseEvent";
+import { KeyboardEvent, KeyboardEventType } from "./KeyboardEvent";
 import { Vector } from "../atoms";
+
+export type MouseEventListenerCallback = (
+  event: MouseEvent
+) => void | Promise<void>;
+
+export type KeyboardEventListenerCallback = (
+  event: KeyboardEvent
+) => void | Promise<void>;
 
 type InputEventsListenerConfig = {
   viewport: Viewport;
@@ -10,13 +18,19 @@ type InputEventsListenerConfig = {
   componentsTree: ComponentsTree;
 };
 
+type EventListenerMap = Map<MouseEventType, MouseEventListenerCallback[]> &
+  Map<KeyboardEventType, KeyboardEventListenerCallback[]>;
+
 export class InputEventsListener {
   private static currentInputEventsListener: InputEventsListener;
   private viewport: Viewport;
   private mouseComponent: MouseComponent;
   private componentsTree: ComponentsTree;
+  private eventListeners: EventListenerMap = new Map();
 
   constructor(config: InputEventsListenerConfig) {
+    InputEventsListener.currentInputEventsListener = this;
+
     this.viewport = config.viewport;
     this.mouseComponent = config.mouseComponent;
     this.componentsTree = config.componentsTree;
@@ -61,31 +75,35 @@ export class InputEventsListener {
       const mouseRenderPosition =
         this.viewport.calculateRenderPosition(mouseCanvasPosition);
 
-      const clickInsideMouseEvent = new MouseEvent({
-        mouseRenderPosition,
-        mouseCanvasPosition,
-        mouseButton: domEvent.button as MouseButton,
-      });
-
       for (const component of clickInsideChain) {
-        component.handleMouseClickEvent(clickInsideMouseEvent);
+        const clickInsideMouseEvent = new MouseEvent({
+          mouseRenderPosition,
+          mouseCanvasPosition,
+          mouseButton: domEvent.button as MouseButton,
+          type: "click",
+          target: component,
+        });
+
+        this.notifyEventListeners(clickInsideMouseEvent);
 
         if (!clickInsideMouseEvent.shouldPropagate) {
-          return;
+          break;
         }
       }
 
-      const clickOutsideMouseEvent = new MouseEvent({
-        mouseRenderPosition,
-        mouseCanvasPosition,
-        mouseButton: domEvent.button as MouseButton,
-      });
-
       for (const component of clickOutsideChain) {
-        component.handleMouseClickOutsideEvent(clickOutsideMouseEvent);
+        const clickOutsideMouseEvent = new MouseEvent({
+          mouseRenderPosition,
+          mouseCanvasPosition,
+          mouseButton: domEvent.button as MouseButton,
+          type: "click",
+          target: component,
+        });
+
+        this.notifyEventListeners(clickOutsideMouseEvent);
 
         if (!clickOutsideMouseEvent.shouldPropagate) {
-          return;
+          break;
         }
       }
     });
@@ -115,17 +133,19 @@ export class InputEventsListener {
       const mouseRenderPosition =
         this.viewport.calculateRenderPosition(mouseCanvasPosition);
 
-      const mouseEvent = new MouseEvent({
-        mouseRenderPosition,
-        mouseCanvasPosition,
-        mouseButton: domEvent.button as MouseButton,
-      });
-
       for (const component of chain) {
-        component.handleMouseDblClickEvent(mouseEvent);
+        const dblClickEvent = new MouseEvent({
+          mouseRenderPosition,
+          mouseCanvasPosition,
+          mouseButton: domEvent.button as MouseButton,
+          type: "dblclick",
+          target: component,
+        });
 
-        if (!mouseEvent.shouldPropagate) {
-          return;
+        this.notifyEventListeners(dblClickEvent);
+
+        if (!dblClickEvent.shouldPropagate) {
+          break;
         }
       }
     });
@@ -154,18 +174,21 @@ export class InputEventsListener {
       const mouseRenderPosition =
         this.viewport.calculateRenderPosition(mouseCanvasPosition);
 
-      const mouseEvent = new MouseEvent({
-        mouseRenderPosition,
-        mouseCanvasPosition,
-        mouseButton: domEvent.button as MouseButton,
-      });
       chain.reverse();
 
       for (const component of chain) {
-        component.handleMouseDownEvent(mouseEvent);
+        const mouseDownEvent = new MouseEvent({
+          mouseRenderPosition,
+          mouseCanvasPosition,
+          mouseButton: domEvent.button as MouseButton,
+          type: "mousedown",
+          target: component,
+        });
 
-        if (!mouseEvent.shouldPropagate) {
-          return;
+        this.notifyEventListeners(mouseDownEvent);
+
+        if (!mouseDownEvent.shouldPropagate) {
+          break;
         }
       }
     });
@@ -195,17 +218,19 @@ export class InputEventsListener {
       const mouseRenderPosition =
         this.viewport.calculateRenderPosition(mouseCanvasPosition);
 
-      const mouseEvent = new MouseEvent({
-        mouseRenderPosition,
-        mouseCanvasPosition,
-        mouseButton: domEvent.button as MouseButton,
-      });
-
       for (const component of chain) {
-        component.handleMouseUpEvent(mouseEvent);
+        const mouseUpEvent = new MouseEvent({
+          mouseRenderPosition,
+          mouseCanvasPosition,
+          mouseButton: domEvent.button as MouseButton,
+          type: "mouseup",
+          target: component,
+        });
 
-        if (!mouseEvent.shouldPropagate) {
-          return;
+        this.notifyEventListeners(mouseUpEvent);
+
+        if (!mouseUpEvent.shouldPropagate) {
+          break;
         }
       }
     });
@@ -230,13 +255,19 @@ export class InputEventsListener {
       const mouseRenderPosition =
         this.viewport.calculateRenderPosition(mouseCanvasPosition);
 
-      const mouseEvent = new MouseEvent({
+      const mouseMoveEvent = new MouseEvent({
         mouseRenderPosition,
         mouseCanvasPosition,
+        type: "mousemove",
+        target: this.componentsTree.getRootComponent()!,
       });
 
-      for (const component of this.componentsTree.traverse()) {
-        component.handleMouseMoveEvent(mouseEvent);
+      this.notifyEventListeners(mouseMoveEvent);
+
+      if (!mouseMoveEvent.shouldPropagate) {
+        console.log(
+          `DEV_LOG: mousemove event doesn't support event.stopPropogation as this event fires on root component only!`
+        );
       }
     });
   }
@@ -250,17 +281,16 @@ export class InputEventsListener {
         document.activeElement.blur();
       }
 
-      for (const component of this.componentsTree.traverse()) {
-        const keyboardEvent = new KeyboardEvent({
-          key: domEvent.key,
-          altKey: domEvent.altKey,
-          ctrlKey: domEvent.ctrlKey,
-          metaKey: domEvent.metaKey,
-          shiftKey: domEvent.shiftKey,
-        });
+      const keyboardEvent = new KeyboardEvent({
+        key: domEvent.key,
+        altKey: domEvent.altKey,
+        ctrlKey: domEvent.ctrlKey,
+        metaKey: domEvent.metaKey,
+        shiftKey: domEvent.shiftKey,
+        type: "keydown",
+      });
 
-        component.handleKeyboardDownEvent(keyboardEvent);
-      }
+      this.notifyEventListeners(keyboardEvent);
     });
   }
 
@@ -273,17 +303,64 @@ export class InputEventsListener {
         document.activeElement.blur();
       }
 
-      for (const component of this.componentsTree.traverse()) {
-        const keyboardEvent = new KeyboardEvent({
-          key: domEvent.key,
-          altKey: domEvent.altKey,
-          ctrlKey: domEvent.ctrlKey,
-          metaKey: domEvent.metaKey,
-          shiftKey: domEvent.shiftKey,
-        });
+      const keyboardEvent = new KeyboardEvent({
+        key: domEvent.key,
+        altKey: domEvent.altKey,
+        ctrlKey: domEvent.ctrlKey,
+        metaKey: domEvent.metaKey,
+        shiftKey: domEvent.shiftKey,
+        type: "keyup",
+      });
 
-        component.handleKeyboardUpEvent(keyboardEvent);
-      }
+      this.notifyEventListeners(keyboardEvent);
     });
+  }
+
+  private notifyEventListeners(event: MouseEvent): void;
+  private notifyEventListeners(event: KeyboardEvent): void;
+  private notifyEventListeners(event: any) {
+    const currentEventListenersOfThisType =
+      this.eventListeners.get(event.type) || [];
+
+    if (event.type === "keyup") {
+      console.log(currentEventListenersOfThisType);
+    }
+
+    for (const cb of currentEventListenersOfThisType) {
+      if (!event.shouldPropagate) {
+        return;
+      }
+
+      cb(event);
+    }
+  }
+
+  public addEventListener(
+    type: MouseEventType,
+    cb: MouseEventListenerCallback
+  ): void;
+  public addEventListener(
+    type: KeyboardEventType,
+    cb: KeyboardEventListenerCallback
+  ): void;
+  public addEventListener(type: any, cb: any) {
+    const currentEventListenersOfThisType = this.eventListeners.get(type) || [];
+    this.eventListeners.set(type, [...currentEventListenersOfThisType, cb]);
+
+    return () => {
+      // unsubscribe/remove event listener
+      const eventListenersOfThisType = this.eventListeners.get(type) || [];
+      this.eventListeners.set(
+        type,
+        eventListenersOfThisType.filter((fn) => fn !== cb)
+      );
+    };
+  }
+
+  public static getCurrentInputEventsListener() {
+    if (!this.currentInputEventsListener)
+      throw new Error(`InputEventsListener not found!`);
+
+    return this.currentInputEventsListener;
   }
 }

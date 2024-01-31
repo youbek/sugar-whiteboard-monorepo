@@ -2,8 +2,11 @@
   import { Whiteboard } from "sugar-whiteboard-core"
   import { ref, computed, watchEffect } from "vue";
   import IconButtonComponent from "./IconButtonComponent.vue";
-  import TextIcon from "../assets/icons/text.svg"
+  import ImageIcon from "../assets/icons/image.svg";
+  import TextIcon from "../assets/icons/text.svg";
   import EditIcon from "../assets/icons/edit.svg";
+import { Color, RectComponent, Vector } from "sugar-canvas-ui";
+
 
   const canvasRef = ref<HTMLCanvasElement | null>(null);
   const whiteboard = computed(() => new Whiteboard());
@@ -15,6 +18,18 @@
     }
   });
   
+  function addImage(event: any) {
+    event.preventDefault();
+    event.target.blur();
+
+    const dumpImageComponent = new RectComponent();
+
+    dumpImageComponent.size = new Vector(100, 100);
+    dumpImageComponent.backgroundColor = new Color(255, 0, 0, 100);
+
+    whiteboard.value.addComponent(dumpImageComponent)
+  }
+
   function addText(event: any) {
     event.preventDefault();
     event.target.blur();
@@ -34,6 +49,7 @@
   <canvas ref="canvasRef"></canvas>
   <div class="fixed top-0 pointer-events-none">
     <div class="h-screen flex flex-col justify-center items-center gap-2 px-2 pointer-events-none">
+      <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addImage"><ImageIcon /></IconButtonComponent>
       <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addText"><TextIcon /></IconButtonComponent>
       <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addDrawing"><EditIcon/></IconButtonComponent>
     </div>

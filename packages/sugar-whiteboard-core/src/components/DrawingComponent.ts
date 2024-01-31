@@ -1,8 +1,13 @@
-import { MouseEvent } from "../events";
-import { ComponentMode, DrawContext } from "./Component";
-import { RectComponent } from "./RectComponent";
-import { Color, Vector, Path } from "../atoms";
-import { Viewport } from "../rendering";
+import {
+  MouseEvent,
+  Viewport,
+  Color,
+  Vector,
+  Path,
+  RectComponent,
+  ComponentMode,
+  DrawContext,
+} from "sugar-canvas-ui";
 
 export class DrawingComponent extends RectComponent {
   private isDrawing = false;
@@ -21,8 +26,6 @@ export class DrawingComponent extends RectComponent {
     super();
 
     this.switchToDrawMode();
-
-    this.backgroundColor = new Color(0, 255, 0, 0.5);
   }
 
   private switchToDrawMode() {

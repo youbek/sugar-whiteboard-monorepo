@@ -2,11 +2,12 @@ import {
   Component,
   TextComponent,
   SugarCanvasClientApp,
-  DrawingComponent,
 } from "sugar-canvas-ui";
-import { MainBoardComponent } from "./components";
+import { MainBoardComponent, DrawingComponent } from "./components";
+import { Context, DefaultContext } from "./contexts";
 
 export class Whiteboard {
+  private currentTool: Context | null = null;
   private sugarCanvasApp: SugarCanvasClientApp | null = null;
 
   public addTextComponent() {
@@ -35,5 +36,7 @@ export class Whiteboard {
       canvas,
       rootComponent: new MainBoardComponent(),
     });
+
+    this.currentTool = new DefaultContext();
   }
 }
