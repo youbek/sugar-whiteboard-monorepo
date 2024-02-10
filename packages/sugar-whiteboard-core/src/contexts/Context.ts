@@ -9,15 +9,36 @@
  * It is part of the command pattern because it initiates requests to the particular components
  * and those components handle the logic
  */
-import { ComponentsTree, InputEventsListener } from "sugar-canvas-ui";
+import {
+  Component,
+  ComponentsTree,
+  InputEventsListener,
+} from "sugar-canvas-ui";
 
 export class Context {
   protected componentsTree: ComponentsTree;
   protected inputEventsListener: InputEventsListener;
+  protected onUnmountListeners: (() => void)[] = [];
 
   constructor() {
     this.componentsTree = ComponentsTree.getCurrentComponentsTree();
     this.inputEventsListener =
       InputEventsListener.getCurrentInputEventsListener();
+  }
+
+  public unmount() {
+    this.onUnmountListeners.forEach((cb) => cb());
+  }
+
+  public onUnmount(cb: () => void) {
+    this.onUnmountListeners.push(cb);
+  }
+
+  public addComponent(component: Component) {
+    this.componentsTree.addComponent(component);
+  }
+
+  public removeComponent(component: Component) {
+    this.componentsTree.removeComponent(component);
   }
 }

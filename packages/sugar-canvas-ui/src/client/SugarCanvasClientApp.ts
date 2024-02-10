@@ -35,12 +35,4 @@ export class SugarCanvasClientApp {
 
     engine.scheduleDraw();
   }
-
-  addComponent(component: Component) {
-    this.componentsTree.addComponent(component);
-  }
-
-  removeComponent(component: Component) {
-    this.componentsTree.removeComponent(component);
-  }
 }

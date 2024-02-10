@@ -6,6 +6,7 @@
   import TextIcon from "../assets/icons/text.svg";
   import EditIcon from "../assets/icons/edit.svg";
 import { Color, RectComponent, Vector } from "sugar-canvas-ui";
+import { DefaultContext, TextContext } from "sugar-whiteboard-core/dist/contexts";
 
 
   const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -27,21 +28,23 @@ import { Color, RectComponent, Vector } from "sugar-canvas-ui";
     dumpImageComponent.size = new Vector(100, 100);
     dumpImageComponent.backgroundColor = new Color(255, 0, 0, 100);
 
-    whiteboard.value.addComponent(dumpImageComponent)
+    const defaultContext = whiteboard.value.setContext(DefaultContext);
+    defaultContext.addComponent(dumpImageComponent);
   }
 
   function addText(event: any) {
     event.preventDefault();
     event.target.blur();
 
-    whiteboard.value.addTextComponent();
+    const textContext = whiteboard.value.setContext(TextContext);
+    textContext.addTextComponent();
   }
 
   function addDrawing(event: any) {
     event.preventDefault();
     event.target.blur();
 
-    whiteboard.value.addDrawingComponent();
+    // whiteboard.value.addDrawingComponent();
   }
 </script>
 

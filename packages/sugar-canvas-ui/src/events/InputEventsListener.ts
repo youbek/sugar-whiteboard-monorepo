@@ -96,7 +96,7 @@ export class InputEventsListener {
           mouseRenderPosition,
           mouseCanvasPosition,
           mouseButton: domEvent.button as MouseButton,
-          type: "click",
+          type: "outsideclick",
           target: component,
         });
 
@@ -338,12 +338,12 @@ export class InputEventsListener {
   public addEventListener(
     type: MouseEventType,
     cb: MouseEventListenerCallback
-  ): void;
+  ): () => void;
   public addEventListener(
     type: KeyboardEventType,
     cb: KeyboardEventListenerCallback
-  ): void;
-  public addEventListener(type: any, cb: any) {
+  ): () => void;
+  public addEventListener(type: any, cb: any): () => void {
     const currentEventListenersOfThisType = this.eventListeners.get(type) || [];
     this.eventListeners.set(type, [...currentEventListenersOfThisType, cb]);
 

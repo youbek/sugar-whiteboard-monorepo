@@ -1,31 +1,36 @@
-import {
-  Component,
-  TextComponent,
-  SugarCanvasClientApp,
-} from "sugar-canvas-ui";
+import { SugarCanvasClientApp } from "sugar-canvas-ui";
 import { MainBoardComponent, DrawingComponent } from "./components";
-import { Context, DefaultContext } from "./contexts";
+import { DefaultContext, TextContext } from "./contexts";
+
+type WhiteboardContext = DefaultContext | TextContext;
 
 export class Whiteboard {
-  private currentTool: Context | null = null;
+  private currentContext: WhiteboardContext | null = null;
   private sugarCanvasApp: SugarCanvasClientApp | null = null;
 
-  public addTextComponent() {
-    const textComponent = new TextComponent();
-    this.addComponent(textComponent);
+  public setContext<TContext extends WhiteboardContext>(
+    Context: new (...args: any[]) => TContext
+  ): TContext {
+    if (this.currentContext instanceof Context) return this.currentContext;
+
+    this.currentContext?.unmount();
+
+    const context = (this.currentContext = new Context());
+    1;
+
+    context.onUnmount(() => {
+      this.currentContext = new DefaultContext();
+    });
+
+    return context;
   }
 
-  public addDrawingComponent() {
-    const drawingComponent = new DrawingComponent();
-    this.addComponent(drawingComponent);
-  }
+  public getContext(): WhiteboardContext {
+    if (this.currentContext === null) {
+      throw new Error(`Calling getContext before initializing the whiteboard!`);
+    }
 
-  public addComponent(component: Component) {
-    this.sugarCanvasApp?.addComponent(component);
-  }
-
-  public removeComponent(component: Component) {
-    this.sugarCanvasApp?.removeComponent(component);
+    return this.currentContext;
   }
 
   public init(canvas: HTMLCanvasElement) {
@@ -37,6 +42,6 @@ export class Whiteboard {
       rootComponent: new MainBoardComponent(),
     });
 
-    this.currentTool = new DefaultContext();
+    this.currentContext = new DefaultContext();
   }
 }

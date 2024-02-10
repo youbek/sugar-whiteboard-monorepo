@@ -7,6 +7,7 @@ export type MouseButton = 0 | 1 | 2;
 export type MouseEventType =
   | "click"
   | "dblclick"
+  | "outsideclick"
   | "mousedown"
   | "mouseup"
   | "mousemove";
