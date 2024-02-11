@@ -8,8 +8,6 @@ import { DragController } from "../controllers/DragController";
 import { PanController } from "../controllers/PanController";
 
 export class DefaultContext extends Context {
-  private controllers: Controller[] = [];
-
   constructor() {
     super();
 
@@ -17,12 +15,5 @@ export class DefaultContext extends Context {
     this.controllers.push(new PanController());
 
     this.controllers.forEach((controller) => controller.mount());
-  }
-
-  public unmount() {
-    this.controllers.forEach((controller) => controller.unmount());
-    this.controllers = [];
-
-    super.unmount();
   }
 }

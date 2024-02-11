@@ -4,13 +4,11 @@
  */
 import { TextComponent } from "sugar-canvas-ui";
 import { Context } from "./Context";
-import { Controller, OnUnmountContext } from "../controllers/Controller";
+import { OnUnmountContext } from "../controllers/Controller";
 import { DragController } from "../controllers/DragController";
 import { TextController } from "../controllers/TextController";
 
 export class TextContext extends Context {
-  private controllers: Controller[] = [];
-
   constructor() {
     super();
 
@@ -49,14 +47,5 @@ export class TextContext extends Context {
     textController.onUnmount(this.handleTextControllerUnmount.bind(this));
 
     this.addComponent(textComponent);
-  }
-
-  public unmount(): void {
-    const oldControllers = [...this.controllers];
-    this.controllers = [];
-
-    oldControllers.forEach((controller) => controller.unmount());
-
-    super.unmount();
   }
 }

@@ -102,7 +102,7 @@ export abstract class Component {
     return this.children;
   }
 
-  public drawEditBorder(context: DrawContext) {
+  public drawBorders(context: DrawContext) {
     const renderPosition = context.viewport.calculateRenderPosition(
       new Vector(this.boundary.left, this.boundary.top)
     );
@@ -121,7 +121,7 @@ export abstract class Component {
       this.mode === ComponentMode.SELECT ||
       this.mode === ComponentMode.EDIT
     ) {
-      this.drawEditBorder(context);
+      this.drawBorders(context);
     }
 
     if (this.showDebugInfo) {

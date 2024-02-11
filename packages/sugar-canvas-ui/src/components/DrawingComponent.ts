@@ -1,17 +1,9 @@
-import {
-  MouseEvent,
-  Viewport,
-  Color,
-  Vector,
-  Path,
-  RectComponent,
-  ComponentMode,
-  DrawContext,
-} from "sugar-canvas-ui";
+import { Color, Path, Vector } from "../atoms";
+import { RectComponent } from "./RectComponent";
+import { ComponentMode, DrawContext } from "./Component";
+import { Viewport } from "../rendering";
 
 export class DrawingComponent extends RectComponent {
-  private isDrawing = false;
-  private path: Path = new Path();
   private pathBoundary: {
     left: number;
     right: number;
@@ -19,47 +11,13 @@ export class DrawingComponent extends RectComponent {
     top: number;
   } | null = null;
 
+  private path: Path = new Path();
+
   public penWidth = 5;
   public penColor = new Color(0, 0, 0, 1);
 
   constructor() {
     super();
-
-    this.switchToDrawMode();
-  }
-
-  private switchToDrawMode() {
-    const viewport = Viewport.getCurrentViewport();
-    if (!viewport) {
-      throw new Error(`Couldn't find viewport!`);
-    }
-
-    this.size = new Vector(viewport.canvas.width, viewport.canvas.height);
-    this.mode = ComponentMode.EDIT;
-    this.zIndex = Number.MAX_SAFE_INTEGER;
-    this.position = viewport.position;
-  }
-
-  private switchToViewMode() {
-    this.zIndex = 1;
-    this.isDrawing = false;
-    this.mode = ComponentMode.VIEW;
-
-    if (this.pathBoundary) {
-      const x = this.pathBoundary.right - this.pathBoundary.left;
-      const y = this.pathBoundary.bottom - this.pathBoundary.top;
-
-      this.size = new Vector(x, y);
-
-      const pivot = new Vector(this.pathBoundary.left, this.pathBoundary.top);
-
-      this.position = new Vector(
-        pivot.x + this.position.x,
-        pivot.y + this.position.y
-      );
-
-      this.path.setPivot(pivot);
-    }
   }
 
   public draw(context: DrawContext) {
@@ -105,31 +63,7 @@ export class DrawingComponent extends RectComponent {
     context.ctx.lineCap = prevLineCap;
   }
 
-  public handleMouseDownEvent(event: MouseEvent): void {
-    if (this.mode !== ComponentMode.EDIT) return;
-
-    event.stopPropagation();
-    this.path.add(
-      new Vector(event.mouseCanvasPosition.x, event.mouseCanvasPosition.y)
-    );
-    this.isDrawing = true;
-  }
-
-  public handleMouseUpEvent(event: MouseEvent): void {
-    if (this.mode !== ComponentMode.EDIT) return;
-
-    event.stopPropagation();
-    this.switchToViewMode();
-  }
-
-  public handleMouseMoveEvent(event: MouseEvent): void {
-    if (this.mode !== ComponentMode.EDIT || !this.isDrawing) return;
-
-    event.stopPropagation();
-    const node = new Vector(
-      event.mouseCanvasPosition.x,
-      event.mouseCanvasPosition.y
-    );
+  public addPathNode(node: Vector) {
     this.path.add(node);
 
     if (!this.pathBoundary) {
@@ -155,6 +89,39 @@ export class DrawingComponent extends RectComponent {
       if (node.y < this.pathBoundary.top) {
         this.pathBoundary.top = node.y;
       }
+    }
+  }
+
+  public switchToDrawMode() {
+    const viewport = Viewport.getCurrentViewport();
+    if (!viewport) {
+      throw new Error(`Couldn't find viewport!`);
+    }
+
+    this.size = new Vector(viewport.canvas.width, viewport.canvas.height);
+    this.mode = ComponentMode.EDIT;
+    this.zIndex = Number.MAX_SAFE_INTEGER;
+    this.position = viewport.position;
+  }
+
+  public switchToViewMode() {
+    this.zIndex = 1;
+    this.mode = ComponentMode.VIEW;
+
+    if (this.pathBoundary) {
+      const x = this.pathBoundary.right - this.pathBoundary.left;
+      const y = this.pathBoundary.bottom - this.pathBoundary.top;
+
+      this.size = new Vector(x, y);
+
+      const pivot = new Vector(this.pathBoundary.left, this.pathBoundary.top);
+
+      this.position = new Vector(
+        pivot.x + this.position.x,
+        pivot.y + this.position.y
+      );
+
+      this.path.setPivot(pivot);
     }
   }
 }

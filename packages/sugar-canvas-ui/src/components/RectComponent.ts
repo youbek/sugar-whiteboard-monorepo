@@ -46,7 +46,5 @@ export class RectComponent extends Component {
       this.size.x * this.scale,
       this.size.y * this.scale
     );
-
-    super.draw(context);
   }
 }

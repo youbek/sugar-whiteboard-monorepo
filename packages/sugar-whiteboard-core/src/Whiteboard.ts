@@ -1,5 +1,5 @@
 import { SugarCanvasClientApp } from "sugar-canvas-ui";
-import { MainBoardComponent, DrawingComponent } from "./components";
+import { MainBoardComponent } from "./components";
 import { DefaultContext, TextContext } from "./contexts";
 
 type WhiteboardContext = DefaultContext | TextContext;

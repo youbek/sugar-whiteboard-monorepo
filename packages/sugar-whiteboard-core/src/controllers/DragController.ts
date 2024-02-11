@@ -1,4 +1,4 @@
-import { Component, MouseEvent, Vector } from "sugar-canvas-ui";
+import { Component, ComponentMode, MouseEvent, Vector } from "sugar-canvas-ui";
 import { Controller } from "./Controller";
 import { MainBoardComponent } from "../components";
 
@@ -21,6 +21,8 @@ export class DragController extends Controller {
 
     this.startWaitTimerId = setTimeout(() => {
       this.draggingComponent = event.target;
+      this.draggingComponent.mode = ComponentMode.SELECT;
+
       document.body.style.cursor = "grabbing";
 
       this.dragOffset = new Vector(
@@ -45,6 +47,7 @@ export class DragController extends Controller {
     if (!this.draggingComponent) return;
 
     clearTimeout(this.startWaitTimerId);
+    this.draggingComponent.mode = ComponentMode.VIEW;
     this.draggingComponent = null;
     document.body.style.cursor = "default";
   }

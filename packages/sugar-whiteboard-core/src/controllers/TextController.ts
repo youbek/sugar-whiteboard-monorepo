@@ -10,7 +10,6 @@ import _ from "lodash";
 import { Controller } from "./Controller";
 
 export class TextController extends Controller {
-  // By previous it means after last edit mode
   private textComponent: TextComponent;
 
   constructor(component: TextComponent) {
