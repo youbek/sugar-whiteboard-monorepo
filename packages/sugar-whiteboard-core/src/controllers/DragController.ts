@@ -21,7 +21,7 @@ export class DragController extends Controller {
 
     this.startWaitTimerId = setTimeout(() => {
       this.draggingComponent = event.target;
-      this.draggingComponent.mode = ComponentMode.SELECT;
+      this.draggingComponent.setMode(ComponentMode.SELECT);
 
       document.body.style.cursor = "grabbing";
 
@@ -33,6 +33,8 @@ export class DragController extends Controller {
   }
 
   private handleDragging(event: MouseEvent) {
+    console.log("I'm still here!");
+
     if (!this.draggingComponent) return;
 
     this.draggingComponent.setPosition(
@@ -47,7 +49,7 @@ export class DragController extends Controller {
     if (!this.draggingComponent) return;
 
     clearTimeout(this.startWaitTimerId);
-    this.draggingComponent.mode = ComponentMode.VIEW;
+    this.draggingComponent.removeMode(ComponentMode.SELECT);
     this.draggingComponent = null;
     document.body.style.cursor = "default";
   }

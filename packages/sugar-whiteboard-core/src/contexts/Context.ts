@@ -9,6 +9,7 @@
  * It is part of the command pattern because it initiates requests to the particular components
  * and those components handle the logic
  */
+import { Whiteboard } from "../Whiteboard";
 import { Controller } from "../controllers/Controller";
 import {
   Component,
@@ -17,12 +18,14 @@ import {
 } from "sugar-canvas-ui";
 
 export class Context {
+  protected whiteboard: Whiteboard;
   protected controllers: Controller[] = [];
   protected componentsTree: ComponentsTree;
   protected inputEventsListener: InputEventsListener;
   protected onUnmountListeners: (() => void)[] = [];
 
-  constructor() {
+  constructor(whiteboard: Whiteboard) {
+    this.whiteboard = whiteboard;
     this.componentsTree = ComponentsTree.getCurrentComponentsTree();
     this.inputEventsListener =
       InputEventsListener.getCurrentInputEventsListener();
@@ -34,7 +37,10 @@ export class Context {
 
     oldControllers.forEach((controller) => controller.unmount());
 
-    this.onUnmountListeners.forEach((cb) => cb());
+    // make sure to run async to get the latest syncrounous changes
+    setTimeout(() => {
+      this.onUnmountListeners.forEach((cb) => cb());
+    }, 1000);
   }
 
   public onUnmount(cb: () => void) {

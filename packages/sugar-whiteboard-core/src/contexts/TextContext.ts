@@ -7,10 +7,12 @@ import { Context } from "./Context";
 import { OnUnmountContext } from "../controllers/Controller";
 import { DragController } from "../controllers/DragController";
 import { TextController } from "../controllers/TextController";
+import { Whiteboard } from "../Whiteboard";
+import { DefaultContext } from "./DefaultContext";
 
 export class TextContext extends Context {
-  constructor() {
-    super();
+  constructor(whiteboard: Whiteboard) {
+    super(whiteboard);
 
     this.controllers.push(new DragController());
     this.controllers.forEach((controller) => controller.mount());
@@ -24,13 +26,17 @@ export class TextContext extends Context {
     if (
       this.controllers.some((controller) => controller === unmountingController)
     ) {
-      return this.unmount();
+      this.whiteboard.setContext(DefaultContext);
     }
   }
 
   public addTextComponent() {
     const textComponent = new TextComponent();
+    this.addComponent(textComponent);
+    this.setTextComponent(textComponent);
+  }
 
+  public setTextComponent(textComponent: TextComponent) {
     this.controllers = this.controllers.filter((controller) => {
       if (controller instanceof TextController) {
         // unmount and remove old text controller
@@ -45,7 +51,5 @@ export class TextContext extends Context {
     this.controllers.push(textController);
     textController.mount();
     textController.onUnmount(this.handleTextControllerUnmount.bind(this));
-
-    this.addComponent(textComponent);
   }
 }

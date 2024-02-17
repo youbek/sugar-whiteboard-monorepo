@@ -24,6 +24,9 @@ export type DrawContext = {
 };
 
 export abstract class Component {
+  /** @description Component mode changes. Last item the most recent change. */
+  private componentModes: ComponentMode[] = [ComponentMode.VIEW];
+
   public id: string;
   public position: Vector = new Vector(0, 0); // world position
   public lastRenderPosition: Vector = new Vector(0, 0); // drawn position relative to last viewport
@@ -36,8 +39,6 @@ export abstract class Component {
   public zIndex: number = 0;
   public showDebugInfo: boolean = false;
   public selectModeBoundaryColor = new Color(66, 195, 255, 1);
-
-  public mode: ComponentMode = ComponentMode.VIEW;
 
   public children: Component[] | null = null;
 
@@ -100,6 +101,24 @@ export abstract class Component {
 
   public getChildren() {
     return this.children;
+  }
+
+  public removeMode(removingMode: ComponentMode) {
+    this.componentModes = this.componentModes.filter(
+      (mode) => mode !== removingMode
+    );
+
+    if (!this.componentModes) {
+      this.componentModes = [ComponentMode.VIEW];
+    }
+  }
+
+  public setMode(mode: ComponentMode) {
+    this.componentModes.push(mode);
+  }
+
+  public get mode() {
+    return this.componentModes[this.componentModes.length - 1];
   }
 
   public drawBorders(context: DrawContext) {

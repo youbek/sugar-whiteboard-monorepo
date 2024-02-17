@@ -44,7 +44,6 @@ import { DefaultContext, TextContext, DrawContext } from "sugar-whiteboard-core/
     event.preventDefault();
     event.target.blur();
 
-    // whiteboard.value.addDrawingComponent();
     whiteboard.value.setContext(DrawContext)
   }
 </script>

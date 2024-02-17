@@ -99,14 +99,14 @@ export class DrawingComponent extends RectComponent {
     }
 
     this.size = new Vector(viewport.canvas.width, viewport.canvas.height);
-    this.mode = ComponentMode.EDIT;
+    this.setMode(ComponentMode.EDIT);
     this.zIndex = Number.MAX_SAFE_INTEGER;
     this.position = viewport.position;
   }
 
   public switchToViewMode() {
     this.zIndex = 1;
-    this.mode = ComponentMode.VIEW;
+    this.removeMode(ComponentMode.EDIT);
 
     if (this.pathBoundary) {
       const x = this.pathBoundary.right - this.pathBoundary.left;

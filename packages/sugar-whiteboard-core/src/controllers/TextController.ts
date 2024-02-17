@@ -16,7 +16,7 @@ export class TextController extends Controller {
     super();
 
     this.textComponent = component;
-    this.textComponent.mode = ComponentMode.EDIT;
+    this.textComponent.setMode(ComponentMode.EDIT);
   }
 
   private setCaretIndex(caretIndex: number, selectionStart: number = -1) {
@@ -232,7 +232,7 @@ export class TextController extends Controller {
   }
 
   public unmount(): void {
-    this.textComponent.mode = ComponentMode.VIEW;
+    this.textComponent.removeMode(ComponentMode.EDIT);
 
     if (!this.textComponent.text.getContent().length) {
       this.componentsTree.removeComponent(this.textComponent);

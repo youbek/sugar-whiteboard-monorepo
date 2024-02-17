@@ -1,31 +1,25 @@
 import { SugarCanvasClientApp } from "sugar-canvas-ui";
 import { MainBoardComponent } from "./components";
-import { DefaultContext, TextContext } from "./contexts";
-
-type WhiteboardContext = DefaultContext | TextContext;
+import { Context, DefaultContext, TextContext } from "./contexts";
 
 export class Whiteboard {
-  private currentContext: WhiteboardContext | null = null;
+  private currentContext: Context | null = null;
   private sugarCanvasApp: SugarCanvasClientApp | null = null;
 
-  public setContext<TContext extends WhiteboardContext>(
-    Context: new (...args: any[]) => TContext
+  public setContext<TContext extends Context>(
+    Context: new (...args: [Whiteboard]) => TContext
   ): TContext {
+    // if same context, no need to recreate!
     if (this.currentContext instanceof Context) return this.currentContext;
 
     this.currentContext?.unmount();
 
-    const context = (this.currentContext = new Context());
-    1;
+    this.currentContext = new Context(this);
 
-    context.onUnmount(() => {
-      this.currentContext = new DefaultContext();
-    });
-
-    return context;
+    return this.currentContext as unknown as TContext;
   }
 
-  public getContext(): WhiteboardContext {
+  public getContext(): Context {
     if (this.currentContext === null) {
       throw new Error(`Calling getContext before initializing the whiteboard!`);
     }
@@ -42,6 +36,6 @@ export class Whiteboard {
       rootComponent: new MainBoardComponent(),
     });
 
-    this.currentContext = new DefaultContext();
+    this.currentContext = new DefaultContext(this);
   }
 }

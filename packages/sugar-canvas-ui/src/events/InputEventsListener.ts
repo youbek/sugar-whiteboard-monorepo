@@ -350,6 +350,12 @@ export class InputEventsListener {
     return () => {
       // unsubscribe/remove event listener
       const eventListenersOfThisType = this.eventListeners.get(type) || [];
+      console.log(
+        "REMOVE",
+        eventListenersOfThisType,
+        eventListenersOfThisType.filter((fn) => fn !== cb)
+      );
+
       this.eventListeners.set(
         type,
         eventListenersOfThisType.filter((fn) => fn !== cb)
