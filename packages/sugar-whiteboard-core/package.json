@@ -1,30 +1,17 @@
 {
   "name": "sugar-whiteboard-core",
-  "version": "0.0.1",
-  "description": "Framework agnostic JavaScript whiteboard. The core component of sugarwhiteboard.com",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest test",
-    "build": "rimraf dist && tsc",
-    "dev": "tsc --watch"
+    "dev": "vite build --watch",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
-  "keywords": [
-    "whiteboard",
-    "canvas",
-    "whiteboard",
-    "whiteboard in js"
-  ],
-  "author": "Yusufbek Alimatov",
-  "license": "MIT",
   "devDependencies": {
-    "@types/lodash": "^4.14.202",
-    "rimraf": "^5.0.5",
-    "sugar-tsconfigs": "*",
-    "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "lodash": "^4.17.21",
-    "uid": "^2.0.2",
-    "sugar-canvas-ui": "*"
+    "typescript": "^5.2.2",
+    "vite": "^5.1.0",
+    "vite-plugin-dts": "^3.7.2"
   }
 }

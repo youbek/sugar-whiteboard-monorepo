@@ -1,8 +1,10 @@
 import { Vector } from "../atoms";
 import { Component, DrawContext } from "./Component";
 import { Viewport } from "../rendering";
+
 export class MouseComponent extends Component {
   private static currentMouse: MouseComponent;
+  private images: HTMLImageElement[] = [];
 
   constructor() {
     super();
@@ -32,6 +34,33 @@ export class MouseComponent extends Component {
     });
   }
 
+  public setImage(imageSrc: string) {
+    const image = new Image();
+    image.src = imageSrc;
+
+    this.images.push(image);
+  }
+
+  public removeImage(imageSrc: string) {
+    this.images = this.images.filter((image) => image.src !== imageSrc);
+  }
+
+  private drawLatestImage(context: DrawContext) {
+    for (let i = this.images.length - 1; i >= 0; i--) {
+      const image = this.images[i];
+
+      if (!image.complete) continue;
+
+      context.ctx.drawImage(
+        image,
+        this.position.x - this.size.x / 2,
+        this.position.y - this.size.y / 2,
+        this.size.x,
+        this.size.y
+      );
+    }
+  }
+
   public get vertices() {
     return [
       new Vector(this.position.x, this.position.y),
@@ -53,14 +82,16 @@ export class MouseComponent extends Component {
   public draw(context: DrawContext): void {
     super.draw(context);
 
+    this.drawLatestImage(context);
+
     // UNCOMMENT TO SEE DEBUG RENDER
-    // context.ctx.fillStyle = "red";
-    // context.ctx.fillRect(
-    //   this.position.x,
-    //   this.position.y,
-    //   this.size.x * this.scale,
-    //   this.size.y * this.scale
-    // );
+    context.ctx.fillStyle = "red";
+    context.ctx.fillRect(
+      this.position.x,
+      this.position.y,
+      this.size.x * this.scale,
+      this.size.y * this.scale
+    );
   }
 
   public static getCurrentMouse() {

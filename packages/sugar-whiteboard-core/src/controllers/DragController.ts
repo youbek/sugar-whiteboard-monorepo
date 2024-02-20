@@ -33,8 +33,6 @@ export class DragController extends Controller {
   }
 
   private handleDragging(event: MouseEvent) {
-    console.log("I'm still here!");
-
     if (!this.draggingComponent) return;
 
     this.draggingComponent.setPosition(

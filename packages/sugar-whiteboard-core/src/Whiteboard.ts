@@ -1,10 +1,9 @@
 import { SugarCanvasClientApp } from "sugar-canvas-ui";
 import { MainBoardComponent } from "./components";
-import { Context, DefaultContext, TextContext } from "./contexts";
+import { Context, DefaultContext } from "./contexts";
 
 export class Whiteboard {
   private currentContext: Context | null = null;
-  private sugarCanvasApp: SugarCanvasClientApp | null = null;
 
   public setContext<TContext extends Context>(
     Context: new (...args: [Whiteboard]) => TContext
@@ -31,7 +30,7 @@ export class Whiteboard {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    this.sugarCanvasApp = new SugarCanvasClientApp({
+    new SugarCanvasClientApp({
       canvas,
       rootComponent: new MainBoardComponent(),
     });

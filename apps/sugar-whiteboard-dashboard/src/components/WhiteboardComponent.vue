@@ -1,13 +1,12 @@
 <script setup lang="ts">
-  import { Whiteboard } from "sugar-whiteboard-core"
+  import { Whiteboard, DefaultContext, TextContext, DrawContext, EraseContext } from "sugar-whiteboard-core"
   import { ref, computed, watchEffect } from "vue";
   import IconButtonComponent from "./IconButtonComponent.vue";
   import ImageIcon from "../assets/icons/image.svg";
   import TextIcon from "../assets/icons/text.svg";
   import EditIcon from "../assets/icons/edit.svg";
-import { Color, RectComponent, Vector } from "sugar-canvas-ui";
-import { DefaultContext, TextContext, DrawContext } from "sugar-whiteboard-core/dist/contexts";
-
+  import EraseIcon from "../assets/icons/erase.svg";
+  import { Color, RectComponent, Vector } from "sugar-canvas-ui";
 
   const canvasRef = ref<HTMLCanvasElement | null>(null);
   const whiteboard = computed(() => new Whiteboard());
@@ -46,6 +45,13 @@ import { DefaultContext, TextContext, DrawContext } from "sugar-whiteboard-core/
 
     whiteboard.value.setContext(DrawContext)
   }
+
+  function selectErase(event: any) {
+    event.preventDefault();
+    event.target.blur();
+
+    whiteboard.value.setContext(EraseContext);
+  }
 </script>
 
 <template>
@@ -55,6 +61,7 @@ import { DefaultContext, TextContext, DrawContext } from "sugar-whiteboard-core/
       <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addImage"><ImageIcon /></IconButtonComponent>
       <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addText"><TextIcon /></IconButtonComponent>
       <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="addDrawing"><EditIcon/></IconButtonComponent>
+      <IconButtonComponent class="pointer-events-auto bottom-10 right-20 shadow-sm" @click="selectErase"><EraseIcon /></IconButtonComponent>
     </div>
   </div>
 </template>

@@ -1,5 +1,4 @@
 import {
-  Color,
   ComponentMode,
   KeyboardEvent,
   MouseEvent,

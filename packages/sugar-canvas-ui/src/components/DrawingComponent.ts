@@ -92,6 +92,12 @@ export class DrawingComponent extends RectComponent {
     }
   }
 
+  public removePathNodes(position: Vector, area: Vector) {
+    if (!this.pathBoundary) return;
+
+    this.path.remove(position, area);
+  }
+
   public switchToDrawMode() {
     const viewport = Viewport.getCurrentViewport();
     if (!viewport) {

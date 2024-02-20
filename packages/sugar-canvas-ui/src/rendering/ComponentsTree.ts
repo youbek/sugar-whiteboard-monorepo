@@ -59,6 +59,19 @@ export class ComponentsTree {
     return null;
   }
 
+  public findComponentsOfType<T extends Component>(
+    Type: new (...args: any[]) => T
+  ): T[] {
+    const components: T[] = [];
+    for (const component of this.traverse()) {
+      if (component instanceof Type) {
+        components.push(component);
+      }
+    }
+
+    return components;
+  }
+
   public static getCurrentComponentsTree() {
     return this.currentComponentsTree;
   }
