@@ -53,27 +53,6 @@ export class DrawingComponent extends RectComponent {
     context.ctx.strokeStyle = prevStrokeStyle;
     context.ctx.lineWidth = prevLineWidth;
     context.ctx.lineCap = prevLineCap;
-
-    for (const [currentNode, nextNode] of this.path.traverse()) {
-      const moveToPosition = context.viewport.calculateRenderPosition(
-        new Vector(
-          currentNode.x + this.position.x,
-          currentNode.y + this.position.y
-        )
-      );
-
-      const lineToPosition = context.viewport.calculateRenderPosition(
-        new Vector(nextNode.x + this.position.x, nextNode.y + this.position.y)
-      );
-
-      context.ctx.fillStyle = "red";
-      context.ctx.rect(moveToPosition.x, moveToPosition.y, 10, 10);
-      context.ctx.fill();
-
-      context.ctx.fillStyle = "green";
-      context.ctx.rect(lineToPosition.x, lineToPosition.y, 5, 5);
-      context.ctx.fill();
-    }
   }
 
   public addPathNode(node: Vector) {

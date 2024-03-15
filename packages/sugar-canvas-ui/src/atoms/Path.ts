@@ -27,7 +27,7 @@ export class Path {
   constructor(config?: PathConfig) {
     this.minSpaceBetweenNodes =
       config?.minSpaceBetweenNodes === undefined
-        ? 100
+        ? 10
         : config.minSpaceBetweenNodes;
     this.nodes = [];
   }
@@ -69,8 +69,10 @@ export class Path {
     if (
       vector &&
       lastNode &&
-      Math.abs(lastNode.x - vector.x) + Math.abs(lastNode.y - vector.y) <
-        this.minSpaceBetweenNodes
+      (vector.x === lastNode.x ||
+        vector.y === lastNode.y ||
+        Math.abs(lastNode.x - vector.x) + Math.abs(lastNode.y - vector.y) <
+          this.minSpaceBetweenNodes)
     ) {
       return;
     }
@@ -142,31 +144,24 @@ export class Path {
     const nodeRegionCode = this.getNodeRegionCode(node, xMin, yMin, xMax, yMax);
 
     if (nodeRegionCode & TOP_REGION) {
-      console.log("TOP REGION!");
       return new Vector(
         node.x +
           ((nextNode.x - node.x) * (yMin - node.y)) / (nextNode.y - node.y),
         yMin
       );
     } else if (nodeRegionCode & BOTTOM_REGION) {
-      console.log("BOTTOM REGION!");
-
       return new Vector(
         node.x +
           ((nextNode.x - node.x) * (yMax - node.y)) / (nextNode.y - node.y),
         yMax
       );
     } else if (nodeRegionCode & RIGHT_REGION) {
-      console.log("RIGHT REGION!");
-
       return new Vector(
         xMax,
         node.y +
           ((nextNode.y - node.y) * (xMax - node.x)) / (nextNode.x - node.x)
       );
     } else {
-      console.log("LEFT REGION");
-
       return new Vector(
         xMin,
         node.y +
@@ -177,9 +172,6 @@ export class Path {
 
   // uses Cohen Sutherland line clipping algorithm
   public remove(position: Vector, area: Vector) {
-    // console.log("BEFORE PATH: ", this.nodes);
-    // console.log("AREA: ", area);
-
     const newPath = new Path({
       minSpaceBetweenNodes: 0,
     });
@@ -195,6 +187,8 @@ export class Path {
 
     while (i < this.nodes.length) {
       if (!currentNode) {
+        newPath.add(currentNode); // always record nulls
+
         i++;
         currentNode = this.nodes[i];
         nextNode = this.nodes[i + 1];
@@ -210,8 +204,8 @@ export class Path {
       );
 
       if (!nextNode) {
-        const currentNodeIsInside = currentNodeRegionCode === 0;
-        if (!currentNodeIsInside) newPath.add(currentNode);
+        const currentNodeIsOutside = currentNodeRegionCode !== 0;
+        if (currentNodeIsOutside) newPath.add(currentNode);
 
         i++;
         currentNode = this.nodes[i];
@@ -230,10 +224,6 @@ export class Path {
       const isBothInside =
         currentNodeRegionCode === 0 && nextNodeRegionCode === 0;
       if (isBothInside) {
-        console.log(
-          `COMPLETELY INSIDE THE AREA: (${currentNode.x}, ${currentNode.y}), (${nextNode.x}, ${nextNode.y})`
-        );
-
         i++;
         currentNode = this.nodes[i];
         nextNode = this.nodes[i + 1];
@@ -253,10 +243,6 @@ export class Path {
 
       const isCurrentNodeOutside = currentNodeRegionCode !== 0;
       const isNextNodeOutside = nextNodeRegionCode !== 0;
-
-      console.log(currentNode);
-      console.log(`Is current node outside: `, isCurrentNodeOutside);
-      console.log(`Is next node outside: `, isNextNodeOutside);
 
       /** If both nodes are outside but area intersects between these nodes,
        * then there will be 2 intersection nodes
@@ -324,6 +310,8 @@ export class Path {
       currentNode = this.nodes[i];
       nextNode = this.nodes[i + 1];
     }
+
+    console.log("NEW PATH: ", newPath);
 
     return newPath;
   }
