@@ -43,7 +43,7 @@
     event.preventDefault();
     event.target.blur();
 
-    whiteboard.value.setContext(DrawContext)
+    whiteboard.value.setContext(DrawContext);
   }
 
   function selectErase(event: any) {

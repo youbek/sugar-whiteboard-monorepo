@@ -4,13 +4,6 @@ import { ComponentMode, DrawContext } from "./Component";
 import { Viewport } from "../rendering";
 
 export class DrawingComponent extends RectComponent {
-  private pathBoundary: {
-    left: number;
-    right: number;
-    bottom: number;
-    top: number;
-  } | null = null;
-
   private path: Path = new Path();
 
   public penWidth = 5;
@@ -47,11 +40,10 @@ export class DrawingComponent extends RectComponent {
       );
       context.ctx.moveTo(moveToPosition.x, moveToPosition.y);
 
-      const lineToPosition = context.viewport.calculateRenderPosition(nextNode);
-      context.ctx.lineTo(
-        lineToPosition.x + this.position.x,
-        lineToPosition.y + this.position.y
+      const lineToPosition = context.viewport.calculateRenderPosition(
+        new Vector(nextNode.x + this.position.x, nextNode.y + this.position.y)
       );
+      context.ctx.lineTo(lineToPosition.x, lineToPosition.y);
 
       context.ctx.closePath();
       context.ctx.stroke();
@@ -61,41 +53,41 @@ export class DrawingComponent extends RectComponent {
     context.ctx.strokeStyle = prevStrokeStyle;
     context.ctx.lineWidth = prevLineWidth;
     context.ctx.lineCap = prevLineCap;
+
+    for (const [currentNode, nextNode] of this.path.traverse()) {
+      const moveToPosition = context.viewport.calculateRenderPosition(
+        new Vector(
+          currentNode.x + this.position.x,
+          currentNode.y + this.position.y
+        )
+      );
+
+      const lineToPosition = context.viewport.calculateRenderPosition(
+        new Vector(nextNode.x + this.position.x, nextNode.y + this.position.y)
+      );
+
+      context.ctx.fillStyle = "red";
+      context.ctx.rect(moveToPosition.x, moveToPosition.y, 10, 10);
+      context.ctx.fill();
+
+      context.ctx.fillStyle = "green";
+      context.ctx.rect(lineToPosition.x, lineToPosition.y, 5, 5);
+      context.ctx.fill();
+    }
   }
 
   public addPathNode(node: Vector) {
     this.path.add(node);
-
-    if (!this.pathBoundary) {
-      this.pathBoundary = {
-        left: node.x,
-        right: node.x,
-        top: node.y,
-        bottom: node.y,
-      };
-    } else {
-      if (node.x < this.pathBoundary.left) {
-        this.pathBoundary.left = node.x;
-      }
-
-      if (node.x > this.pathBoundary.right) {
-        this.pathBoundary.right = node.x;
-      }
-
-      if (node.y > this.pathBoundary.bottom) {
-        this.pathBoundary.bottom = node.y;
-      }
-
-      if (node.y < this.pathBoundary.top) {
-        this.pathBoundary.top = node.y;
-      }
-    }
   }
 
   public removePathNodes(position: Vector, area: Vector) {
-    if (!this.pathBoundary) return;
+    const localPosition = new Vector(
+      position.x - this.position.x,
+      position.y - this.position.y
+    );
+    const newPath = this.path.remove(localPosition, area);
 
-    this.path.remove(position, area);
+    this.path = newPath;
   }
 
   public switchToDrawMode() {
@@ -114,20 +106,22 @@ export class DrawingComponent extends RectComponent {
     this.zIndex = 1;
     this.removeMode(ComponentMode.EDIT);
 
-    if (this.pathBoundary) {
-      const x = this.pathBoundary.right - this.pathBoundary.left;
-      const y = this.pathBoundary.bottom - this.pathBoundary.top;
+    this.size = this.path.getSize();
 
-      this.size = new Vector(x, y);
+    // this gives left top node's position. Which is canvas position.
+    // So, no matter where this drawing component is, in other words no matter where the viewport is
+    // max left top node's position is (0, 0) indicating the corner of the screen.
+    const pathPosition = this.path.getPosition();
 
-      const pivot = new Vector(this.pathBoundary.left, this.pathBoundary.top);
+    // Now we need to add this.position to keep position within the viewport's position
+    // otherwise everything will swap back to the origin as path position is canvas position
+    this.position = new Vector(
+      pathPosition.x + this.position.x,
+      pathPosition.y + this.position.y
+    );
 
-      this.position = new Vector(
-        pivot.x + this.position.x,
-        pivot.y + this.position.y
-      );
-
-      this.path.setPivot(pivot);
-    }
+    // Why? - Because node's position should be always local. And left top node should be at (0, 0) position.
+    // In other words we need to set new pivot.
+    this.path.setPivot(pathPosition);
   }
 }

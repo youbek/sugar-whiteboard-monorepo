@@ -30,6 +30,17 @@ export class EraseController extends Controller {
 
     if (this.currentDrawings.length) {
       this.isErasing = true;
+
+      for (const component of this.currentDrawings) {
+        component.removePathNodes(
+          new Vector(
+            // TODO: Remove calculation
+            event.mouseRenderPosition.x,
+            event.mouseRenderPosition.y
+          ),
+          this.eraseArea
+        );
+      }
     }
   }
 
@@ -39,8 +50,8 @@ export class EraseController extends Controller {
         component.removePathNodes(
           new Vector(
             // TODO: Remove calculation
-            event.mouseRenderPosition.x + this.eraseArea.x,
-            event.mouseRenderPosition.y + this.eraseArea.y
+            event.mouseRenderPosition.x,
+            event.mouseRenderPosition.y
           ),
           this.eraseArea
         );

@@ -25,5 +25,7 @@ export class DefaultContext extends Context {
     );
 
     this.controllers.forEach((controller) => controller.mount());
+
+    console.log(this.componentsTree);
   }
 }

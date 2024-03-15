@@ -8,6 +8,7 @@ export default defineConfig({
       fileName: "index",
       entry: "./src/index.ts",
     },
+    minify: false,
   },
   /** @ts-ignore */
   plugins: [dts()],
