@@ -7,8 +7,8 @@ Project provides `sugar-canvas-ui` library to build applications for HTML canvas
 It provides out of the box:
 
 - Optimized Rendering, Components Tree
-- Primitive components such as `RectangleComponent`, `TextComponent`
-- Events handling like event propogation and collision detection
+- Primitive components such as `RectangleComponent`, `TextComponent`, `DrawingComponent`
+- Events handling like event propogation, collision detection
 
 You can see the demo project, `sugar-whiteboard` that uses `sugar-canvas-ui` under the hood.
 
