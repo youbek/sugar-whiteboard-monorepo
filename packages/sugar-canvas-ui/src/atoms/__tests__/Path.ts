@@ -51,7 +51,6 @@ describe("Path", () => {
       null,
     ];
 
-    console.log(nodes);
     expect(nodes).toHaveLength(expectedNodes.length);
     for (let i = 0; i < expectedNodes.length; i++) {
       const node = nodes[i];

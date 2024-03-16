@@ -53,8 +53,8 @@ export class MouseComponent extends Component {
 
       context.ctx.drawImage(
         image,
-        this.position.x - this.size.x / 2,
-        this.position.y - this.size.y / 2,
+        this.position.x,
+        this.position.y,
         this.size.x,
         this.size.y
       );
@@ -85,13 +85,13 @@ export class MouseComponent extends Component {
     this.drawLatestImage(context);
 
     // UNCOMMENT TO SEE DEBUG RENDER
-    context.ctx.fillStyle = "red";
-    context.ctx.fillRect(
-      this.position.x,
-      this.position.y,
-      this.size.x * this.scale,
-      this.size.y * this.scale
-    );
+    // context.ctx.fillStyle = "red";
+    // context.ctx.fillRect(
+    //   this.position.x,
+    //   this.position.y,
+    //   this.size.x * this.scale,
+    //   this.size.y * this.scale
+    // );
   }
 
   public static getCurrentMouse() {

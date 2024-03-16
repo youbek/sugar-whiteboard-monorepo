@@ -9,7 +9,7 @@ import eraseIcon from "../assets/icons/erase.svg";
 import { Controller } from "./Controller";
 
 export class EraseController extends Controller {
-  public eraseArea: Vector = new Vector(48, 48);
+  public eraseArea: Vector = new Vector(24, 24);
   public currentDrawings: DrawingComponent[] = [];
   public isErasing: boolean = false;
 
@@ -20,6 +20,7 @@ export class EraseController extends Controller {
 
     mouseComponent.setImage(eraseIcon);
     mouseComponent.size = this.eraseArea;
+    document.body.style.cursor = "none";
   }
 
   public handleMouseDownEvent(event: MouseEvent): void {
@@ -91,6 +92,7 @@ export class EraseController extends Controller {
   public unmount(): void {
     super.unmount();
 
+    document.body.style.cursor = "default";
     MouseComponent.getCurrentMouse().removeImage(eraseIcon);
   }
 }
