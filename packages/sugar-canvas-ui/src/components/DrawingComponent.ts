@@ -67,6 +67,8 @@ export class DrawingComponent extends RectComponent {
     const newPath = this.path.remove(localPosition, area);
 
     this.path = newPath;
+    this.recalculatePosition();
+    this.recalculateSize();
   }
 
   public switchToDrawMode() {
@@ -85,8 +87,11 @@ export class DrawingComponent extends RectComponent {
     this.zIndex = 1;
     this.removeMode(ComponentMode.EDIT);
 
-    this.size = this.path.getSize();
+    this.recalculatePosition();
+    this.recalculateSize();
+  }
 
+  public recalculatePosition() {
     // this gives left top node's position. Which is canvas position.
     // So, no matter where this drawing component is, in other words no matter where the viewport is
     // max left top node's position is (0, 0) indicating the corner of the screen.
@@ -102,5 +107,9 @@ export class DrawingComponent extends RectComponent {
     // Why? - Because node's position should be always local. And left top node should be at (0, 0) position.
     // In other words we need to set new pivot.
     this.path.setPivot(pathPosition);
+  }
+
+  public recalculateSize() {
+    this.size = this.path.getSize();
   }
 }

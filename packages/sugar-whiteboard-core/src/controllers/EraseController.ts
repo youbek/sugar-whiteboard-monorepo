@@ -63,6 +63,13 @@ export class EraseController extends Controller {
   public handleMouseUpEvent(event: MouseEvent) {
     event.stopPropagation();
 
+    /** Find DrawingComponents that has size equal to zero, remove them from tree! */
+    for (const component of this.currentDrawings) {
+      if (component.size.x <= 0 || component.size.y <= 0) {
+        this.componentsTree.removeComponent(component);
+      }
+    }
+
     this.isErasing = false;
   }
 
