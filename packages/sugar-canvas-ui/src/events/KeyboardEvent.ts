@@ -8,9 +8,8 @@ type KeyboardEventConfig = {
   ctrlKey: boolean;
   metaKey: boolean;
   altKey: boolean;
-  type: KeyboardEventType;
+  type: "keydown" | "keyup";
 };
-
 export class KeyboardEvent extends Event {
   key: string;
   shiftKey: boolean;

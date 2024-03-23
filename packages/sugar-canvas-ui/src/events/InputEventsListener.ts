@@ -1,8 +1,11 @@
+import hotkeys from "hotkeys-js";
+
 import { ComponentsTree, Viewport } from "../rendering";
-import { Component, ComponentMode, MouseComponent } from "../components";
+import { Component, MouseComponent } from "../components";
 import { MouseButton, MouseEvent, MouseEventType } from "./MouseEvent";
 import { KeyboardEvent, KeyboardEventType } from "./KeyboardEvent";
 import { Vector } from "../atoms";
+import { HotKeyEvent, HotKeyEventType } from "./HotKeyEvent";
 
 export type MouseEventListenerCallback = (
   event: MouseEvent
@@ -12,6 +15,10 @@ export type KeyboardEventListenerCallback = (
   event: KeyboardEvent
 ) => void | Promise<void>;
 
+export type HotKeyEventListenerCallback = (
+  event: HotKeyEvent
+) => void | Promise<void>;
+
 type InputEventsListenerConfig = {
   viewport: Viewport;
   mouseComponent: MouseComponent;
@@ -19,7 +26,8 @@ type InputEventsListenerConfig = {
 };
 
 type EventListenerMap = Map<MouseEventType, MouseEventListenerCallback[]> &
-  Map<KeyboardEventType, KeyboardEventListenerCallback[]>;
+  Map<KeyboardEventType, KeyboardEventListenerCallback[]> &
+  Map<HotKeyEventType, HotKeyEvent>;
 
 export class InputEventsListener {
   private static currentInputEventsListener: InputEventsListener;
@@ -44,6 +52,7 @@ export class InputEventsListener {
     this.listenMouseMove();
     this.listenKeyboardDown();
     this.listenKeyboardUp();
+    this.listenHotKeys();
   }
 
   private listenMouseClick() {
@@ -289,7 +298,6 @@ export class InputEventsListener {
         shiftKey: domEvent.shiftKey,
         type: "keydown",
       });
-
       this.notifyEventListeners(keyboardEvent);
     });
   }
@@ -316,15 +324,39 @@ export class InputEventsListener {
     });
   }
 
+  private listenHotKeys() {
+    // unbind every single started listenner
+    hotkeys.unbind();
+
+    for (const eventName of this.eventListeners.keys()) {
+      if (!eventName.startsWith("hotkey-")) {
+        return;
+      }
+
+      const keys = eventName.split("-")[1];
+
+      hotkeys(keys, (domEvent) => {
+        if (
+          document.activeElement &&
+          document.activeElement instanceof HTMLElement
+        ) {
+          document.activeElement.blur();
+        }
+
+        const hotkeyEvent = new HotKeyEvent({
+          type: eventName as unknown as HotKeyEventType,
+        });
+        this.notifyEventListeners(hotkeyEvent);
+      });
+    }
+  }
+
   private notifyEventListeners(event: MouseEvent): void;
   private notifyEventListeners(event: KeyboardEvent): void;
+  private notifyEventListeners(event: HotKeyEvent): void;
   private notifyEventListeners(event: any) {
     const currentEventListenersOfThisType =
       this.eventListeners.get(event.type) || [];
-
-    if (event.type === "keyup") {
-      console.log(currentEventListenersOfThisType);
-    }
 
     for (const cb of currentEventListenersOfThisType) {
       if (!event.shouldPropagate) {
@@ -343,9 +375,20 @@ export class InputEventsListener {
     type: KeyboardEventType,
     cb: KeyboardEventListenerCallback
   ): () => void;
+  public addEventListener(
+    type: HotKeyEventType,
+    cb: HotKeyEventListenerCallback
+  ): () => void;
   public addEventListener(type: any, cb: any): () => void {
     const currentEventListenersOfThisType = this.eventListeners.get(type) || [];
+    const isHotKeyEvent = type.startsWith("hotkey-");
     this.eventListeners.set(type, [...currentEventListenersOfThisType, cb]);
+
+    if (isHotKeyEvent) {
+      console.log("SOMETHING IS WEIRD!", type);
+      // Resubscribe all hotkey events (https://github.com/jaywcjlove/hotkeys-js/issues/90)
+      this.listenHotKeys();
+    }
 
     return () => {
       // unsubscribe/remove event listener
@@ -354,6 +397,11 @@ export class InputEventsListener {
         type,
         eventListenersOfThisType.filter((fn) => fn !== cb)
       );
+
+      if (isHotKeyEvent) {
+        // Resubscribe all hotkey events (https://github.com/jaywcjlove/hotkeys-js/issues/90)
+        this.listenHotKeys();
+      }
     };
   }
 

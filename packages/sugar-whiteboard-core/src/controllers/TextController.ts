@@ -130,6 +130,8 @@ export class TextController extends Controller {
   }
 
   private handleKeyboardDownEvent(event: KeyboardEvent): void {
+    if (event.type === "hotkey") return;
+
     const key = event.key;
 
     if (key === "Meta") {
@@ -204,7 +206,7 @@ export class TextController extends Controller {
       return;
     }
 
-    this.insertText(event.key);
+    this.insertText(event.key as unknown as string);
     return;
   }
 

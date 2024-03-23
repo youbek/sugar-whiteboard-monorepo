@@ -27,7 +27,7 @@ export class Path {
   constructor(config?: PathConfig) {
     this.minSpaceBetweenNodes =
       config?.minSpaceBetweenNodes === undefined
-        ? 10
+        ? 0
         : config.minSpaceBetweenNodes;
     this.nodes = [];
   }
@@ -69,8 +69,7 @@ export class Path {
     if (
       vector &&
       lastNode &&
-      (vector.x === lastNode.x ||
-        vector.y === lastNode.y ||
+      ((vector.x === lastNode.x && vector.y === lastNode.y) ||
         Math.abs(lastNode.x - vector.x) + Math.abs(lastNode.y - vector.y) <
           this.minSpaceBetweenNodes)
     ) {
