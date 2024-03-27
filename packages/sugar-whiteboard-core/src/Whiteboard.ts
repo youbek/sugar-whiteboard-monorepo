@@ -1,6 +1,7 @@
 import { SugarCanvasClientApp } from "sugar-canvas-ui";
 import { MainBoardComponent } from "./components";
 import { Context, DefaultContext } from "./contexts";
+import { UndoRedoContainer } from "./modules/UndoRedoContainer";
 
 export class Whiteboard {
   private currentContext: Context | null = null;
@@ -34,6 +35,8 @@ export class Whiteboard {
       canvas,
       rootComponent: new MainBoardComponent(),
     });
+
+    new UndoRedoContainer();
 
     this.currentContext = new DefaultContext(this);
   }

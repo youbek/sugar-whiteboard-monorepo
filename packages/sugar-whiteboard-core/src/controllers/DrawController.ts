@@ -26,7 +26,20 @@ export class DrawController extends Controller {
     event.stopPropagation();
 
     this.drawingComponent?.switchToViewMode();
+
+    const addedDrawingComponent = this.drawingComponent || null;
     this.drawingComponent = null;
+
+    this.undoRedoContainer.saveUndoRedoActions(
+      ({ componentsTree }) => {
+        if (addedDrawingComponent)
+          componentsTree.removeComponent(addedDrawingComponent);
+      },
+      ({ componentsTree }) => {
+        if (addedDrawingComponent)
+          componentsTree.addComponent(addedDrawingComponent);
+      }
+    );
   }
 
   public handleMouseMoveEvent(event: MouseEvent): void {

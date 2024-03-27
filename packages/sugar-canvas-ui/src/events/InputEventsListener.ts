@@ -385,7 +385,6 @@ export class InputEventsListener {
     this.eventListeners.set(type, [...currentEventListenersOfThisType, cb]);
 
     if (isHotKeyEvent) {
-      console.log("SOMETHING IS WEIRD!", type);
       // Resubscribe all hotkey events (https://github.com/jaywcjlove/hotkeys-js/issues/90)
       this.listenHotKeys();
     }

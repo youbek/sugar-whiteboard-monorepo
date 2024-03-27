@@ -1,9 +1,5 @@
-import {
-  ComponentsTree,
-  InputEventsListener,
-  KeyboardEvent,
-} from "sugar-canvas-ui";
-import { HotKeyEvent } from "sugar-canvas-ui/dist/events/HotKeyEvent";
+import { ComponentsTree, InputEventsListener } from "sugar-canvas-ui";
+import { UndoRedoContainer } from "../modules/UndoRedoContainer";
 
 export type OnUnmountContext = {
   /** @description Unmounting controller */
@@ -11,13 +7,9 @@ export type OnUnmountContext = {
 };
 
 export abstract class Controller {
-  static undoStack: (() => Promise<void>)[] = [];
-  static redoStack: (() => Promise<void>)[] = [];
-  static undoEventListenerUnsubscribe: () => void;
-  static redoEventListenerUnsubscribe: () => void;
-
   protected componentsTree: ComponentsTree;
   protected inputEventsListener: InputEventsListener;
+  protected undoRedoContainer: UndoRedoContainer;
   protected onUnmountListeners: ((context: OnUnmountContext) => void)[] = [];
   protected isUnmounted = false;
   protected eventListenerCleanUps: (() => void)[] = [];
@@ -26,38 +18,7 @@ export abstract class Controller {
     this.componentsTree = ComponentsTree.getCurrentComponentsTree();
     this.inputEventsListener =
       InputEventsListener.getCurrentInputEventsListener();
-
-    if (!Controller.undoEventListenerUnsubscribe) {
-      Controller.undoEventListenerUnsubscribe =
-        this.inputEventsListener.addEventListener(
-          `hotkey-meta+z,ctrl+z`,
-          Controller.handleUndoHotKey.bind(Controller)
-        );
-    }
-
-    if (!Controller.redoEventListenerUnsubscribe) {
-      Controller.redoEventListenerUnsubscribe =
-        this.inputEventsListener.addEventListener(
-          "hotkey-meta+shift+z,ctrl+shift+z",
-          Controller.handleRedoHotKey.bind(Controller)
-        );
-    }
-  }
-
-  static handleUndoHotKey() {
-    this.undo();
-  }
-
-  static handleRedoHotKey() {
-    this.redo();
-  }
-
-  static undo() {
-    alert("UNDO Controllers changes!");
-  }
-
-  static redo() {
-    alert("REDO Controllers changes!");
+    this.undoRedoContainer = UndoRedoContainer.getCurrentUndoRedoContainer();
   }
 
   public mount() {}

@@ -16,19 +16,27 @@ import {
   ComponentsTree,
   InputEventsListener,
 } from "sugar-canvas-ui";
+import { UndoRedoContainer } from "../modules/UndoRedoContainer";
 
 export class Context {
   protected whiteboard: Whiteboard;
   protected controllers: Controller[] = [];
   protected componentsTree: ComponentsTree;
+  protected undoRedoContainer: UndoRedoContainer;
   protected inputEventsListener: InputEventsListener;
   protected onUnmountListeners: (() => void)[] = [];
+
+  static undoStack: (() => Promise<void>)[] = [];
+  static redoStack: (() => Promise<void>)[] = [];
+  static undoEventListenerUnsubscribe: () => void;
+  static redoEventListenerUnsubscribe: () => void;
 
   constructor(whiteboard: Whiteboard) {
     this.whiteboard = whiteboard;
     this.componentsTree = ComponentsTree.getCurrentComponentsTree();
     this.inputEventsListener =
       InputEventsListener.getCurrentInputEventsListener();
+    this.undoRedoContainer = UndoRedoContainer.getCurrentUndoRedoContainer();
   }
 
   public unmount() {
@@ -49,6 +57,15 @@ export class Context {
 
   public addComponent(component: Component) {
     this.componentsTree.addComponent(component);
+
+    this.undoRedoContainer.saveUndoRedoActions(
+      (params) => {
+        params.componentsTree.removeComponent(component);
+      },
+      (params) => {
+        params.componentsTree.addComponent(component);
+      }
+    );
   }
 
   public removeComponent(component: Component) {

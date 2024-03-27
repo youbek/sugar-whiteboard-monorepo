@@ -171,4 +171,10 @@ export abstract class Component {
       child.draw(context);
     }
   }
+
+  public duplicate(): Component {
+    throw new Error(
+      `DEV_LOG: Duplication for this component is not implemented!`
+    );
+  }
 }

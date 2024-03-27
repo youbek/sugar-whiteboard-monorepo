@@ -2,15 +2,25 @@ import { Color, Path, Vector } from "../atoms";
 import { RectComponent } from "./RectComponent";
 import { ComponentMode, DrawContext } from "./Component";
 import { Viewport } from "../rendering";
-
 export class DrawingComponent extends RectComponent {
-  private path: Path = new Path();
-
+  public path: Path = new Path();
   public penWidth = 5;
   public penColor = new Color(0, 0, 0, 1);
 
   constructor() {
     super();
+  }
+
+  public duplicate(): DrawingComponent {
+    const duplicateDrawing = new DrawingComponent();
+    duplicateDrawing.id = this.id;
+    duplicateDrawing.position = this.position;
+    duplicateDrawing.rotation = this.rotation;
+    duplicateDrawing.path = this.path;
+    duplicateDrawing.size = this.size;
+    duplicateDrawing.pivot = this.pivot;
+
+    return duplicateDrawing;
   }
 
   public draw(context: DrawContext) {

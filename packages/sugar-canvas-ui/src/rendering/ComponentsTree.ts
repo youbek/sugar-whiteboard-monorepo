@@ -47,6 +47,17 @@ export class ComponentsTree {
     }
   }
 
+  // TODO: Improve this to be O(1)
+  public findComponentById<T extends Component>(id: string): T | null {
+    for (const component of this.traverse()) {
+      if (component.id === id) {
+        return component as unknown as T;
+      }
+    }
+
+    return null;
+  }
+
   public findComponentOfType<T extends Component>(
     Type: new (...args: any[]) => T
   ): T | null {
