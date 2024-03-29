@@ -84,8 +84,8 @@ export class UndoRedoContainer {
     const shouldDeleteUndoRedoStack =
       this.undoRedoIndex !== this.undoStack.length;
     if (shouldDeleteUndoRedoStack) {
-      this.undoStack = this.undoStack.slice(this.undoRedoIndex);
-      this.redoStack = this.redoStack.slice(this.undoRedoIndex);
+      this.undoStack = this.undoStack.slice(0, this.undoRedoIndex);
+      this.redoStack = this.redoStack.slice(0, this.undoRedoIndex);
     }
 
     this.undoStack.push(undoAction);
