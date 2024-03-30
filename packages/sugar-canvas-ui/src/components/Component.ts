@@ -40,7 +40,7 @@ export abstract class Component {
   public showDebugInfo: boolean = false;
   public selectModeBoundaryColor = new Color(66, 195, 255, 1);
 
-  public children: Component[] | null = null;
+  public children: Component[] = [];
 
   constructor() {
     this.id = uid();
@@ -73,8 +73,21 @@ export abstract class Component {
     return this.position;
   }
 
-  public setPosition(position: Vector) {
-    this.position = position;
+  public setPosition(newPosition: Vector) {
+    for (const child of this.children) {
+      const difference = new Vector(
+        child.position.x - this.position.x,
+        child.position.y - this.position.y
+      );
+      const childNewPosition = new Vector(
+        difference.x + newPosition.x,
+        difference.y + newPosition.y
+      );
+
+      child.setPosition(childNewPosition);
+    }
+
+    this.position = newPosition;
   }
 
   public isColliding(other: Component): boolean {
@@ -163,12 +176,6 @@ export abstract class Component {
         );
         context.ctx.stroke();
       }
-    }
-
-    if (!this.children) return;
-
-    for (const child of this.children) {
-      child.draw(context);
     }
   }
 

@@ -62,13 +62,13 @@ export class SugarEngine {
       this.lastDrawTime = prevFrameEndTime;
     }
 
-    const rootComponent = this.componentsTree.getRootComponent();
-
-    rootComponent?.draw({
-      ctx,
-      viewport: this.viewport,
-      deltaTime,
-    });
+    for (const component of this.componentsTree.traverse()) {
+      component.draw({
+        ctx,
+        viewport: this.viewport,
+        deltaTime,
+      });
+    }
 
     this.scheduleDraw();
   }

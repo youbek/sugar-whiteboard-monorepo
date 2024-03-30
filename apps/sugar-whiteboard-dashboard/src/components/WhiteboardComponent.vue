@@ -6,7 +6,7 @@
   import TextIcon from "../assets/icons/text.svg";
   import EditIcon from "../assets/icons/edit.svg";
   import EraseIcon from "../assets/icons/erase.svg";
-  import { Color, RectComponent, Vector } from "sugar-canvas-ui";
+  import {RectComponent, Vector, Color } from "sugar-canvas-ui";
 
   const canvasRef = ref<HTMLCanvasElement | null>(null);
   const whiteboard = computed(() => new Whiteboard());
@@ -23,9 +23,8 @@
     event.target.blur();
 
     const dumpImageComponent = new RectComponent();
-
     dumpImageComponent.size = new Vector(100, 100);
-    dumpImageComponent.backgroundColor = new Color(255, 0, 0, 100);
+    dumpImageComponent.backgroundColor = new Color(255, 0, 0, 1);
 
     const defaultContext = whiteboard.value.setContext(DefaultContext);
     defaultContext.addComponent(dumpImageComponent);
