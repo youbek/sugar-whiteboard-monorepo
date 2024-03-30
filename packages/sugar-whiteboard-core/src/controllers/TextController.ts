@@ -20,6 +20,8 @@ export class TextController extends Controller {
 
   private setCaretIndex(caretIndex: number, selectionStart: number = -1) {
     this.textComponent.caretIndex = caretIndex;
+    this.textComponent.caretBlinkTimer = 0; // restart blinking timer
+    this.textComponent.shouldDrawCaret = true;
 
     const withSelection = selectionStart !== -1;
     if (!withSelection) {

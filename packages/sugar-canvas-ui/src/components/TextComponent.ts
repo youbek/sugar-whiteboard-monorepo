@@ -12,11 +12,11 @@ export class TextComponent extends RectComponent {
   public fontSize = "20px";
   public fontWeight = "normal";
   public selection: TextSelection | null = null;
+
   public caretIndex = 0;
   public caretBlinkDelay = 0.5; // 0.5 second
   public caretBlinkTimer = 0;
-
-  private shouldDrawCaret = false;
+  public shouldDrawCaret = false;
 
   private calculateSize(context: DrawContext) {
     const textMetrics = this.text.multiLineTextMetrics(
