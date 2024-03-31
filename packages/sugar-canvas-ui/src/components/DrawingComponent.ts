@@ -27,7 +27,10 @@ export class DrawingComponent extends RectComponent {
     super.draw(context);
 
     if (this.mode === ComponentMode.EDIT) {
-      this.position = context.viewport.position;
+      this.position = new Vector(
+        -context.viewport.position.x,
+        -context.viewport.position.y
+      );
     }
 
     const prevLineCap = context.ctx.lineCap;
@@ -42,17 +45,17 @@ export class DrawingComponent extends RectComponent {
 
     for (const [currentNode, nextNode] of this.path.traverse()) {
       context.ctx.beginPath();
-      const moveToPosition = context.viewport.calculateRenderPosition(
-        new Vector(
-          currentNode.x + this.position.x,
-          currentNode.y + this.position.y
-        )
+      const moveToPosition = new Vector(
+        currentNode.x + this.position.x,
+        currentNode.y + this.position.y
       );
       context.ctx.moveTo(moveToPosition.x, moveToPosition.y);
 
-      const lineToPosition = context.viewport.calculateRenderPosition(
-        new Vector(nextNode.x + this.position.x, nextNode.y + this.position.y)
+      const lineToPosition = new Vector(
+        nextNode.x + this.position.x,
+        nextNode.y + this.position.y
       );
+
       context.ctx.lineTo(lineToPosition.x, lineToPosition.y);
 
       context.ctx.closePath();

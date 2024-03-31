@@ -36,8 +36,8 @@ export class UndoRedoContainer {
 
     const undoHotKeys =
       window.navigator.userAgent.indexOf("Windows") !== -1
-        ? "ctrl+z"
-        : "command+z";
+        ? "ctrl__z"
+        : "command__z";
 
     this.inputEventsListener.addEventListener(
       `hotkey-${undoHotKeys}`,
@@ -46,8 +46,8 @@ export class UndoRedoContainer {
 
     const redoHotKeys =
       window.navigator.userAgent.indexOf("Windows") !== -1
-        ? "ctrl+shift+z"
-        : "command+shift+z";
+        ? "ctrl__shift__z"
+        : "command__shift__z";
 
     this.inputEventsListener.addEventListener(
       `hotkey-${redoHotKeys}`,

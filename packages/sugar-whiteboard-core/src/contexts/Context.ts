@@ -17,6 +17,7 @@ import {
   InputEventsListener,
 } from "sugar-canvas-ui";
 import { UndoRedoContainer } from "../modules/UndoRedoContainer";
+import { ZoomLevelController } from "../controllers/ZoomLevelController";
 
 export class Context {
   protected whiteboard: Whiteboard;
@@ -37,6 +38,8 @@ export class Context {
     this.inputEventsListener =
       InputEventsListener.getCurrentInputEventsListener();
     this.undoRedoContainer = UndoRedoContainer.getCurrentUndoRedoContainer();
+
+    this.controllers = [new ZoomLevelController()];
   }
 
   public unmount() {

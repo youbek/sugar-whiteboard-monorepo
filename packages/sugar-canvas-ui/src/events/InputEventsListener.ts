@@ -81,12 +81,9 @@ export class InputEventsListener {
         domEvent.clientY - rect.top
       );
 
-      const mouseRenderPosition =
-        this.viewport.calculateRenderPosition(mouseCanvasPosition);
-
       for (const component of clickInsideChain) {
         const clickInsideMouseEvent = new MouseEvent({
-          mouseRenderPosition,
+          mouseRenderPosition: this.mouseComponent.position,
           mouseCanvasPosition,
           mouseButton: domEvent.button as MouseButton,
           type: "click",
@@ -102,7 +99,7 @@ export class InputEventsListener {
 
       for (const component of clickOutsideChain) {
         const clickOutsideMouseEvent = new MouseEvent({
-          mouseRenderPosition,
+          mouseRenderPosition: this.mouseComponent.position,
           mouseCanvasPosition,
           mouseButton: domEvent.button as MouseButton,
           type: "outsideclick",
@@ -139,12 +136,9 @@ export class InputEventsListener {
         domEvent.clientY - rect.top
       );
 
-      const mouseRenderPosition =
-        this.viewport.calculateRenderPosition(mouseCanvasPosition);
-
       for (const component of chain) {
         const dblClickEvent = new MouseEvent({
-          mouseRenderPosition,
+          mouseRenderPosition: this.mouseComponent.position,
           mouseCanvasPosition,
           mouseButton: domEvent.button as MouseButton,
           type: "dblclick",
@@ -180,14 +174,11 @@ export class InputEventsListener {
         domEvent.clientY - rect.top
       );
 
-      const mouseRenderPosition =
-        this.viewport.calculateRenderPosition(mouseCanvasPosition);
-
       chain.reverse();
 
       for (const component of chain) {
         const mouseDownEvent = new MouseEvent({
-          mouseRenderPosition,
+          mouseRenderPosition: this.mouseComponent.position,
           mouseCanvasPosition,
           mouseButton: domEvent.button as MouseButton,
           type: "mousedown",
@@ -224,12 +215,9 @@ export class InputEventsListener {
         domEvent.clientY - rect.top
       );
 
-      const mouseRenderPosition =
-        this.viewport.calculateRenderPosition(mouseCanvasPosition);
-
       for (const component of chain) {
         const mouseUpEvent = new MouseEvent({
-          mouseRenderPosition,
+          mouseRenderPosition: this.mouseComponent.position,
           mouseCanvasPosition,
           mouseButton: domEvent.button as MouseButton,
           type: "mouseup",
@@ -261,11 +249,8 @@ export class InputEventsListener {
         domEvent.clientY - rect.top
       );
 
-      const mouseRenderPosition =
-        this.viewport.calculateRenderPosition(mouseCanvasPosition);
-
       const mouseMoveEvent = new MouseEvent({
-        mouseRenderPosition,
+        mouseRenderPosition: this.mouseComponent.position,
         mouseCanvasPosition,
         type: "mousemove",
         target: this.componentsTree.getRootComponent()!,
@@ -333,9 +318,11 @@ export class InputEventsListener {
         return;
       }
 
-      const keys = eventName.split("-")[1];
+      const keys = eventName.split("hotkey-")[1];
 
-      hotkeys(keys, (domEvent) => {
+      hotkeys(keys, { splitKey: "__" }, (domEvent) => {
+        domEvent.preventDefault();
+
         if (
           document.activeElement &&
           document.activeElement instanceof HTMLElement
@@ -346,6 +333,7 @@ export class InputEventsListener {
         const hotkeyEvent = new HotKeyEvent({
           type: eventName as unknown as HotKeyEventType,
         });
+
         this.notifyEventListeners(hotkeyEvent);
       });
     }

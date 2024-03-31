@@ -22,6 +22,7 @@ export class Viewport {
 
     Viewport.currentViewport = this;
     this.canvas = canvas;
+
     this.zoomLevel = 1;
 
     this.setPosition(new Vector(0, 0));
@@ -58,15 +59,12 @@ export class Viewport {
     );
   }
 
-  public setZoomLevel = (zoomLevel: number) => {
-    this.zoomLevel = zoomLevel;
+  public increaseZoomLevel = (zoomLevelChange: number) => {
+    this.zoomLevel += zoomLevelChange;
   };
 
-  public calculateRenderPosition = (position: Vector): Vector => {
-    return new Vector(
-      position.x - this.position.x,
-      position.y - this.position.y
-    );
+  public decreaseZoomLevel = (zoomLevelChange: number) => {
+    this.zoomLevel -= zoomLevelChange;
   };
 
   public static getCurrentViewport() {

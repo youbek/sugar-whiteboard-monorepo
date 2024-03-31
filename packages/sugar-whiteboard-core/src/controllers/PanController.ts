@@ -56,8 +56,8 @@ export class PanController extends Controller {
 
     this.mainBoardComponent.setPosition(
       new Vector(
-        this.startPosition.x - moveChange.x,
-        this.startPosition.y - moveChange.y
+        this.startPosition.x + moveChange.x,
+        this.startPosition.y + moveChange.y
       )
     );
   }
@@ -78,8 +78,8 @@ export class PanController extends Controller {
 
     this.mainBoardComponent.setPosition(
       new Vector(
-        this.startPosition.x - moveChange.x,
-        this.startPosition.y - moveChange.y
+        this.startPosition.x + moveChange.x,
+        this.startPosition.y + moveChange.y
       )
     );
   }

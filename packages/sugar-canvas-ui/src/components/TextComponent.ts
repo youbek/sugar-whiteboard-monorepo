@@ -98,8 +98,9 @@ export class TextComponent extends RectComponent {
           lineSelectionMetrics.lines.length
       );
 
-      const renderPosition = context.viewport.calculateRenderPosition(
-        new Vector(this.position.x + offsetTextBoxSize.x, this.position.y)
+      const renderPosition = new Vector(
+        this.position.x + offsetTextBoxSize.x,
+        this.position.y
       );
 
       context.ctx.fillStyle = this.selectionColor.toString();
@@ -139,11 +140,10 @@ export class TextComponent extends RectComponent {
       );
 
       context.ctx.fillStyle = this.caretColor.toString();
-      const renderPosition = context.viewport.calculateRenderPosition(position);
 
       context.ctx.fillRect(
-        renderPosition.x,
-        renderPosition.y + height,
+        position.x,
+        position.y + height,
         2,
         textMetrics.lastLineMetrics.fontBoundingBoxAscent +
           textMetrics.lastLineMetrics.fontBoundingBoxDescent
@@ -152,10 +152,6 @@ export class TextComponent extends RectComponent {
   }
 
   public drawText(context: DrawContext, text: Text) {
-    this.lastRenderPosition = context.viewport.calculateRenderPosition(
-      this.position
-    );
-
     const {
       longestLineMetrics: { fontBoundingBoxAscent, fontBoundingBoxDescent },
     } = text.multiLineTextMetrics(context.ctx);
@@ -168,8 +164,8 @@ export class TextComponent extends RectComponent {
 
       context.ctx.fillText(
         line.content,
-        this.lastRenderPosition.x,
-        this.lastRenderPosition.y + lineHeight * i + lineHeight
+        this.position.x,
+        this.position.y + lineHeight * i + lineHeight
       );
     }
   }

@@ -34,15 +34,13 @@ export class SugarEngine {
 
     this.viewport.canvas.style.width = `${this.viewport.canvas.width}px`;
     this.viewport.canvas.style.height = `${this.viewport.canvas.height}px`;
-    const scale = window.devicePixelRatio;
 
-    this.viewport.canvas.width = Math.floor(this.viewport.canvas.width * scale);
-    this.viewport.canvas.height = Math.floor(
-      this.viewport.canvas.height * scale
+    this.viewport.canvas.width = Math.floor(
+      this.viewport.canvas.width * window.devicePixelRatio
     );
-
-    const ctx = this.viewport.canvas.getContext("2d");
-    ctx?.scale(scale, scale);
+    this.viewport.canvas.height = Math.floor(
+      this.viewport.canvas.height * window.devicePixelRatio
+    );
   }
 
   private draw({ prevFrameEndTime }: DrawOptions) {
@@ -52,6 +50,23 @@ export class SugarEngine {
       console.warn("Could not get canvas context");
       return;
     }
+
+    ctx?.reset();
+    ctx?.resetTransform();
+
+    console.log(this.viewport.zoomLevel);
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform
+     */
+    ctx?.setTransform({
+      a: this.viewport.zoomLevel,
+      b: 0,
+      c: 0,
+      d: this.viewport.zoomLevel,
+      e: this.viewport.position.x,
+      f: this.viewport.position.y,
+    });
 
     let deltaTime = 0;
 

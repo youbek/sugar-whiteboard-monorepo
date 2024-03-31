@@ -24,10 +24,12 @@ export class MouseComponent extends Component {
   private syncMousePosition() {
     const viewport = Viewport.getCurrentViewport();
     viewport.canvas.addEventListener("mousemove", (domEvent) => {
+      const viewportPosition = viewport.getPosition();
+
       const rect = viewport.canvas.getBoundingClientRect();
       const mouseCanvasPosition = new Vector(
-        domEvent.clientX - rect.left,
-        domEvent.clientY - rect.top
+        domEvent.clientX - rect.left - viewportPosition.x,
+        domEvent.clientY - rect.top - viewportPosition.y
       );
 
       this.setPosition(mouseCanvasPosition);

@@ -5,9 +5,8 @@ export class MainBoardComponent extends Component {
   public gridSize = new Vector(100, 100);
 
   public get vertices(): Vector[] {
-    const viewport = Viewport.getCurrentViewport();
-    const position = viewport.calculateRenderPosition(this.getPosition());
     const size = this.getSize();
+    const position = new Vector(-this.getPosition().x, -this.getPosition().y);
 
     return [
       new Vector(position.x, position.y),
@@ -28,9 +27,10 @@ export class MainBoardComponent extends Component {
 
   private drawBackground(context: DrawContext) {
     const size = this.getSize();
+    const position = this.getPosition();
 
     context.ctx.fillStyle = "#F3F3F3";
-    context.ctx.fillRect(0, 0, size.x, size.y);
+    context.ctx.fillRect(-position.x, -position.y, size.x, size.y);
   }
 
   private drawGrid(context: DrawContext) {
@@ -45,12 +45,8 @@ export class MainBoardComponent extends Component {
       shouldDrawHorizontalLine = pivot.x < context.viewport.bounds.right;
       if (shouldDrawHorizontalLine) {
         context.ctx.beginPath();
-        const fromPosition = context.viewport.calculateRenderPosition(
-          new Vector(pivot.x, context.viewport.bounds.top)
-        );
-        const toPosition = context.viewport.calculateRenderPosition(
-          new Vector(pivot.x, context.viewport.bounds.bottom)
-        );
+        const fromPosition = new Vector(pivot.x, context.viewport.bounds.top);
+        const toPosition = new Vector(pivot.x, context.viewport.bounds.bottom);
         context.ctx.moveTo(fromPosition.x, fromPosition.y);
         context.ctx.lineTo(toPosition.x, toPosition.y);
         context.ctx.strokeStyle = "#E8E8E8";
@@ -60,12 +56,8 @@ export class MainBoardComponent extends Component {
       shouldDrawVerticalLine = pivot.y < context.viewport.bounds.bottom;
       if (shouldDrawVerticalLine) {
         context.ctx.beginPath();
-        const fromPosition = context.viewport.calculateRenderPosition(
-          new Vector(context.viewport.bounds.left, pivot.y)
-        );
-        const toPosition = context.viewport.calculateRenderPosition(
-          new Vector(context.viewport.bounds.right, pivot.y)
-        );
+        const fromPosition = new Vector(context.viewport.bounds.left, pivot.y);
+        const toPosition = new Vector(context.viewport.bounds.right, pivot.y);
         context.ctx.moveTo(fromPosition.x, fromPosition.y);
         context.ctx.lineTo(toPosition.x, toPosition.y);
         context.ctx.strokeStyle = "#E8E8E8";
@@ -85,7 +77,6 @@ export class MainBoardComponent extends Component {
 
   public getPosition() {
     const viewport = Viewport.getCurrentViewport();
-
     return viewport.getPosition();
   }
 
@@ -97,6 +88,8 @@ export class MainBoardComponent extends Component {
   public draw(context: DrawContext): void {
     this.drawBackground(context);
     this.drawGrid(context);
+
+    this.drawBorders(context);
 
     super.draw(context);
   }

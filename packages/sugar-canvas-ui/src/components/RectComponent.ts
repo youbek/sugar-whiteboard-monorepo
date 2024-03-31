@@ -7,19 +7,10 @@ export class RectComponent extends Component {
 
   public get vertices() {
     return [
-      new Vector(this.lastRenderPosition.x, this.lastRenderPosition.y),
-      new Vector(
-        this.lastRenderPosition.x + this.size.x,
-        this.lastRenderPosition.y
-      ),
-      new Vector(
-        this.lastRenderPosition.x + this.size.x,
-        this.lastRenderPosition.y + this.size.y
-      ),
-      new Vector(
-        this.lastRenderPosition.x,
-        this.lastRenderPosition.y + this.size.y
-      ),
+      new Vector(this.position.x, this.position.y),
+      new Vector(this.position.x + this.size.x, this.position.y),
+      new Vector(this.position.x + this.size.x, this.position.y + this.size.y),
+      new Vector(this.position.x, this.position.y + this.size.y),
     ];
   }
 
@@ -36,13 +27,10 @@ export class RectComponent extends Component {
     super.draw(context);
 
     context.ctx.fillStyle = this.backgroundColor.toString();
-    this.lastRenderPosition = context.viewport.calculateRenderPosition(
-      this.position
-    );
 
     context.ctx.fillRect(
-      this.lastRenderPosition.x,
-      this.lastRenderPosition.y,
+      this.position.x,
+      this.position.y,
       this.size.x * this.scale,
       this.size.y * this.scale
     );

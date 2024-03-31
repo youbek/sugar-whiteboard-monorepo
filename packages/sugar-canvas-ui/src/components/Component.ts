@@ -29,7 +29,6 @@ export abstract class Component {
 
   public id: string;
   public position: Vector = new Vector(0, 0); // world position
-  public lastRenderPosition: Vector = new Vector(0, 0); // drawn position relative to last viewport
   public size: Vector = new Vector(0, 0); // in world size (x => width, y => height)
   public scale: number = 1;
   public rotation: number = 0; // radians
@@ -44,7 +43,6 @@ export abstract class Component {
 
   constructor() {
     this.id = uid();
-    this.lastRenderPosition = this.position;
   }
 
   public get vertices(): Vector[] {
@@ -135,17 +133,10 @@ export abstract class Component {
   }
 
   public drawBorders(context: DrawContext) {
-    const renderPosition = context.viewport.calculateRenderPosition(
-      new Vector(this.boundary.left, this.boundary.top)
-    );
+    const position = new Vector(this.boundary.left, this.boundary.top);
 
     context.ctx.strokeStyle = this.selectModeBoundaryColor.toString();
-    context.ctx.strokeRect(
-      renderPosition.x,
-      renderPosition.y,
-      this.size.x,
-      this.size.y
-    );
+    context.ctx.strokeRect(position.x, position.y, this.size.x, this.size.y);
   }
 
   public draw(context: DrawContext): void {
