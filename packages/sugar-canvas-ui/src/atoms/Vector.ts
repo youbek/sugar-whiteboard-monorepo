@@ -1,4 +1,5 @@
 import _, { max, min } from "lodash";
+import { lerp } from "../utils/functions";
 export class Vector {
   public x: number;
   public y: number;
@@ -32,5 +33,12 @@ export class Vector {
       _.clamp(vector.x, minVector.x, maxVector.x),
       _.clamp(vector.y, minVector.y, maxVector.y)
     );
+  }
+
+  static lerp(a: Vector, b: Vector, t: number) {
+    const xChange = lerp(a.x, b.x, t);
+    const yChange = lerp(a.y, b.y, t);
+
+    return new Vector(xChange, yChange);
   }
 }

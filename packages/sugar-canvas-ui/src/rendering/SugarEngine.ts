@@ -54,18 +54,17 @@ export class SugarEngine {
     ctx?.reset();
     ctx?.resetTransform();
 
-    console.log(this.viewport.zoomLevel);
-
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform
      */
+    const zoomLevel = this.viewport.getZoomLevel();
     ctx?.setTransform({
-      a: this.viewport.zoomLevel,
+      a: zoomLevel,
       b: 0,
       c: 0,
-      d: this.viewport.zoomLevel,
-      e: this.viewport.position.x,
-      f: this.viewport.position.y,
+      d: zoomLevel,
+      e: -this.viewport.position.x * zoomLevel,
+      f: -this.viewport.position.y * zoomLevel,
     });
 
     let deltaTime = 0;

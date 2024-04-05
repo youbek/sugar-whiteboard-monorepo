@@ -28,9 +28,10 @@ export class DrawingComponent extends RectComponent {
 
     if (this.mode === ComponentMode.EDIT) {
       this.position = new Vector(
-        -context.viewport.position.x,
-        -context.viewport.position.y
+        context.viewport.position.x,
+        context.viewport.position.y
       );
+      this.size = context.viewport.size;
     }
 
     const prevLineCap = context.ctx.lineCap;
@@ -45,16 +46,10 @@ export class DrawingComponent extends RectComponent {
 
     for (const [currentNode, nextNode] of this.path.traverse()) {
       context.ctx.beginPath();
-      const moveToPosition = new Vector(
-        currentNode.x + this.position.x,
-        currentNode.y + this.position.y
-      );
+      const moveToPosition = new Vector(currentNode.x, currentNode.y);
       context.ctx.moveTo(moveToPosition.x, moveToPosition.y);
 
-      const lineToPosition = new Vector(
-        nextNode.x + this.position.x,
-        nextNode.y + this.position.y
-      );
+      const lineToPosition = new Vector(nextNode.x, nextNode.y);
 
       context.ctx.lineTo(lineToPosition.x, lineToPosition.y);
 
@@ -90,7 +85,6 @@ export class DrawingComponent extends RectComponent {
       throw new Error(`Couldn't find viewport!`);
     }
 
-    this.size = new Vector(viewport.canvas.width, viewport.canvas.height);
     this.setMode(ComponentMode.EDIT);
     this.zIndex = Number.MAX_SAFE_INTEGER;
     this.position = viewport.position;
@@ -104,25 +98,20 @@ export class DrawingComponent extends RectComponent {
     this.recalculateSize();
   }
 
+  // THIS CAN POSSIBLY BE REFACTORED!!!
   public recalculatePosition() {
-    // this gives left top node's position. Which is canvas position.
-    // So, no matter where this drawing component is, in other words no matter where the viewport is
-    // max left top node's position is (0, 0) indicating the corner of the screen.
     const pathPosition = this.path.getPosition();
 
-    // Now we need to add this.position to keep position within the viewport's position
-    // otherwise everything will swap back to the origin as path position is canvas position
-    this.position = new Vector(
-      pathPosition.x + this.position.x,
-      pathPosition.y + this.position.y
-    );
-
-    // Why? - Because node's position should be always local. And left top node should be at (0, 0) position.
-    // In other words we need to set new pivot.
-    this.path.setPivot(pathPosition);
+    this.position = new Vector(pathPosition.x, pathPosition.y);
   }
 
   public recalculateSize() {
     this.size = this.path.getSize();
+  }
+
+  public setPosition(newPosition: Vector): void {
+    this.path.setPosition(newPosition);
+
+    this.position = new Vector(newPosition.x, newPosition.y);
   }
 }

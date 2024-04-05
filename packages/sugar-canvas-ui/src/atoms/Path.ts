@@ -21,7 +21,6 @@ export class Path {
     top: number;
   } | null = null;
 
-  private pivot: Vector = new Vector(0, 0); // top left of the parent
   private minSpaceBetweenNodes = 0;
 
   constructor(config?: PathConfig) {
@@ -34,6 +33,33 @@ export class Path {
 
   private optimizePath() {
     console.log("WE WILL OPTIMIZE WITH: Ramer–Douglas–Peucker algorithm!");
+  }
+
+  private reCalculatePathBoundary(vector: Vector) {
+    if (!this.pathBoundary) {
+      this.pathBoundary = {
+        left: vector.x,
+        right: vector.x,
+        top: vector.y,
+        bottom: vector.y,
+      };
+    } else {
+      if (vector.x < this.pathBoundary.left) {
+        this.pathBoundary.left = vector.x;
+      }
+
+      if (vector.x > this.pathBoundary.right) {
+        this.pathBoundary.right = vector.x;
+      }
+
+      if (vector.y > this.pathBoundary.bottom) {
+        this.pathBoundary.bottom = vector.y;
+      }
+
+      if (vector.y < this.pathBoundary.top) {
+        this.pathBoundary.top = vector.y;
+      }
+    }
   }
 
   /**
@@ -81,30 +107,7 @@ export class Path {
 
     if (!vector) return;
 
-    if (!this.pathBoundary) {
-      this.pathBoundary = {
-        left: vector.x,
-        right: vector.x,
-        top: vector.y,
-        bottom: vector.y,
-      };
-    } else {
-      if (vector.x < this.pathBoundary.left) {
-        this.pathBoundary.left = vector.x;
-      }
-
-      if (vector.x > this.pathBoundary.right) {
-        this.pathBoundary.right = vector.x;
-      }
-
-      if (vector.y > this.pathBoundary.bottom) {
-        this.pathBoundary.bottom = vector.y;
-      }
-
-      if (vector.y < this.pathBoundary.top) {
-        this.pathBoundary.top = vector.y;
-      }
-    }
+    this.reCalculatePathBoundary(vector);
   }
 
   private getNodeRegionCode(
@@ -313,15 +316,26 @@ export class Path {
     return newPath;
   }
 
-  public setPivot(pivot: Vector) {
-    this.pivot = pivot;
+  public setPosition(newPosition: Vector) {
+    if (!this.pathBoundary) return;
+
+    const oldPosition = this.getPosition();
+    this.pathBoundary = null; // Forget about old path boundary
 
     // Update the nodes' positions so they will be relative to a new pivot.
     for (let i = 0; i < this.nodes.length; i++) {
       const node = this.nodes[i];
       if (!node) continue;
 
-      this.nodes[i] = new Vector(node.x - this.pivot.x, node.y - this.pivot.y);
+      const differenceInX = node.x - oldPosition.x;
+      const differenceInY = node.y - oldPosition.y;
+
+      this.nodes[i] = new Vector(
+        newPosition.x + differenceInX,
+        newPosition.y + differenceInY
+      );
+
+      this.reCalculatePathBoundary(this.nodes[i]!);
     }
   }
 

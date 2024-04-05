@@ -18,7 +18,7 @@ export class DrawController extends Controller {
     }
 
     this.drawingComponent.addPathNode(
-      new Vector(event.mouseCanvasPosition.x, event.mouseCanvasPosition.y)
+      new Vector(event.mouseRenderPosition.x, event.mouseRenderPosition.y)
     );
   }
 
@@ -46,8 +46,8 @@ export class DrawController extends Controller {
     if (!this.drawingComponent) return;
 
     const node = new Vector(
-      event.mouseCanvasPosition.x,
-      event.mouseCanvasPosition.y
+      event.mouseRenderPosition.x,
+      event.mouseRenderPosition.y
     );
     this.drawingComponent.addPathNode(node);
   }

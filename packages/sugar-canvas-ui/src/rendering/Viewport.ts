@@ -1,4 +1,6 @@
+import { clamp } from "lodash";
 import { Vector } from "../atoms";
+import { lerp } from "../utils/functions";
 
 type ViewportBounds = {
   left: number;
@@ -9,9 +11,16 @@ type ViewportBounds = {
 export class Viewport {
   public canvas: HTMLCanvasElement;
   public pivot = new Vector(0, 0); // top left corner of the viewport
+
   public position: Vector = new Vector(0, 0);
+  private positionChangeSpeed = 120; // 0.12 seconds;
+  private positionChangeAnimationId: number | null = null;
+
   public maxSize = new Vector(13824, 8936);
-  public zoomLevel: number;
+
+  private zoomLevel: number;
+  private zoomLevelChangeSpeed = 120; // 0.12 seconds
+  private zoomLevelChangeAnimationId: number | null = null;
 
   private static currentViewport: Viewport;
 
@@ -28,20 +37,113 @@ export class Viewport {
     this.setPosition(new Vector(0, 0));
   }
 
+  private get maxZoomLevel() {
+    const defaultMaxZoomLevel = 2.25;
+    return defaultMaxZoomLevel;
+  }
+
+  // will be calculated by ratio of the canvas size and the viewport size.
+  // for example if the maxSize of the viewport is 2x of the canvas, then min zoom level is 0.5 not higher.
+  // This is because to prevent having whitespaces in the canvas
+  private get minZoomLevel() {
+    const maxInX = this.canvas.width / (this.maxSize.x / 2);
+    const maxInY = this.canvas.height / (this.maxSize.y / 2);
+    const defaultMinZoomLevel = 0.25;
+
+    return Math.max(maxInX, maxInY, defaultMinZoomLevel);
+  }
+
+  private setZoomLevelWithAnimation(newZoomLevel: number) {
+    if (this.zoomLevelChangeAnimationId !== null) {
+      console.log("WHAT?");
+      return; // ignore while animating
+    }
+
+    const oldSize = this.size;
+    const oldZoomLevel = this.zoomLevel;
+    const oldPosition = this.position;
+    const oldCenter = new Vector(
+      oldPosition.x + oldSize.x / 2,
+      oldPosition.y + oldSize.y / 2
+    );
+    const bounds = this.bounds;
+
+    let startTime = 0;
+    const requestAnimation = () => {
+      const animationId = requestAnimationFrame((currentTime) => {
+        if (!startTime) {
+          startTime = currentTime;
+        }
+
+        const elapsedTime = currentTime - startTime;
+        let t = elapsedTime / this.zoomLevelChangeSpeed;
+        t = t < 1 ? t : 1;
+
+        this.zoomLevel = lerp(
+          oldZoomLevel,
+          clamp(newZoomLevel, this.minZoomLevel, this.maxZoomLevel),
+          t
+        );
+
+        const newSize = new Vector(
+          this.canvas.width / this.getZoomLevel(),
+          this.canvas.height / this.getZoomLevel()
+        );
+        const newCenter = new Vector(
+          this.position.x + newSize.x / 2,
+          this.position.y + newSize.y / 2
+        );
+
+        const pivotChange = new Vector(
+          oldCenter.x - newCenter.x,
+          oldCenter.y - newCenter.y
+        );
+        const newPosition = Vector.clamp(
+          new Vector(
+            this.position.x + pivotChange.x,
+            this.position.y + pivotChange.y
+          ),
+          new Vector(bounds.left, bounds.top),
+          new Vector(bounds.right - newSize.x, bounds.bottom - newSize.y)
+        );
+
+        this.position = Vector.lerp(oldPosition, newPosition, t);
+
+        if (elapsedTime >= this.zoomLevelChangeSpeed) {
+          cancelAnimationFrame(animationId);
+          console.log("ANIMATION FINISHED: ");
+          console.log("CURRENT ZOOM LEVEL: ", this.zoomLevel);
+          console.log("TARGET ZOOM LEVEL WAS: ", newZoomLevel);
+          console.log("AND T WAS: ", t);
+          this.zoomLevelChangeAnimationId = null;
+        } else {
+          requestAnimation();
+        }
+      });
+
+      this.zoomLevelChangeAnimationId = animationId;
+    };
+
+    requestAnimation();
+  }
+
   public get bounds(): ViewportBounds {
     const maxSize = new Vector(6912, 4468); // 2x of 4K
 
     return {
-      left: -maxSize.x / 2,
-      top: -maxSize.y / 2,
-      right: maxSize.x / 2,
-      bottom: maxSize.y / 2,
+      left: -maxSize.x,
+      top: -maxSize.y,
+      right: maxSize.x,
+      bottom: maxSize.y,
     };
   }
 
   // Aka window size
   public get size(): Vector {
-    return new Vector(this.canvas.width, this.canvas.height);
+    return new Vector(
+      this.canvas.width / this.getZoomLevel(),
+      this.canvas.height / this.getZoomLevel()
+    );
   }
 
   public getPosition() {
@@ -59,12 +161,48 @@ export class Viewport {
     );
   }
 
+  public setPositionWithAnimation(newPosition: Vector) {
+    if (this.positionChangeAnimationId !== null) {
+      cancelAnimationFrame(this.positionChangeAnimationId);
+    }
+
+    const oldPosition = this.position;
+    let startTime = 0;
+    const requestAnimation = () => {
+      const animationId = requestAnimationFrame((currentTime) => {
+        if (!startTime) {
+          startTime = currentTime;
+        }
+
+        const elapsedTime = currentTime - startTime;
+        const t = elapsedTime / this.positionChangeSpeed;
+
+        this.position = Vector.lerp(oldPosition, newPosition, t);
+
+        if (elapsedTime >= this.positionChangeSpeed) {
+          cancelAnimationFrame(animationId);
+          this.positionChangeAnimationId = null;
+        } else {
+          requestAnimation();
+        }
+      });
+
+      this.positionChangeAnimationId = animationId;
+    };
+
+    requestAnimation();
+  }
+
   public increaseZoomLevel = (zoomLevelChange: number) => {
-    this.zoomLevel += zoomLevelChange;
+    this.setZoomLevelWithAnimation(this.zoomLevel + zoomLevelChange);
   };
 
   public decreaseZoomLevel = (zoomLevelChange: number) => {
-    this.zoomLevel -= zoomLevelChange;
+    this.setZoomLevelWithAnimation(this.zoomLevel - zoomLevelChange);
+  };
+
+  public getZoomLevel = () => {
+    return this.zoomLevel * window.devicePixelRatio;
   };
 
   public static getCurrentViewport() {

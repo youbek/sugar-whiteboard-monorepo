@@ -22,6 +22,7 @@ type MouseEventConfig = {
 
 export class MouseEvent extends Event {
   public type: MouseEventType;
+  /** Mouse's actual position in the screen aka world position */
   public mouseRenderPosition: Vector;
   public mouseCanvasPosition: Vector;
   public mouseButton?: 0 | 1 | 2;

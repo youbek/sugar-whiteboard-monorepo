@@ -6,7 +6,7 @@ export class MainBoardComponent extends Component {
 
   public get vertices(): Vector[] {
     const size = this.getSize();
-    const position = new Vector(-this.getPosition().x, -this.getPosition().y);
+    const position = new Vector(this.getPosition().x, this.getPosition().y);
 
     return [
       new Vector(position.x, position.y),
@@ -30,7 +30,7 @@ export class MainBoardComponent extends Component {
     const position = this.getPosition();
 
     context.ctx.fillStyle = "#F3F3F3";
-    context.ctx.fillRect(-position.x, -position.y, size.x, size.y);
+    context.ctx.fillRect(position.x, position.y, size.x, size.y);
   }
 
   private drawGrid(context: DrawContext) {
@@ -72,7 +72,7 @@ export class MainBoardComponent extends Component {
   public getSize() {
     const viewport = Viewport.getCurrentViewport();
 
-    return new Vector(viewport.canvas.width, viewport.canvas.height);
+    return viewport.size;
   }
 
   public getPosition() {

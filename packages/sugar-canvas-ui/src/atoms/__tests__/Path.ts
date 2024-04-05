@@ -182,4 +182,34 @@ describe("Path", () => {
       }
     }
   });
+
+  test.only("Position update: setting new position updates all nodes' position relatively", () => {
+    const path = new Path({ minSpaceBetweenNodes: 0 });
+
+    // drawing path from left to right
+    path.add(new Vector(10, 4)); // Node A
+    path.add(new Vector(30, 4)); // Node B
+
+    let currentPosition = path.getPosition();
+    expect([currentPosition.x, currentPosition.y]).toEqual([10, 4]);
+
+    path.add(new Vector(5, 2));
+    currentPosition = path.getPosition();
+    expect([currentPosition.x, currentPosition.y]).toEqual([5, 2]);
+
+    path.setPosition(new Vector(15, 20));
+    const allNodes = path.getAllNodes();
+
+    // we moved from 5, 2 to 15, 20 this is 10, 18 change. If we add the change to the first node's position we get 20, 22
+    expect([allNodes[0]!.x, allNodes[0]!.y]).toEqual([20, 22]);
+
+    // we moved from 5, 2 to 15, 20 this is 10, 18 change. If we add the change to the second node's position we get 40, 22
+    expect([allNodes[1]!.x, allNodes[1]!.y]).toEqual([40, 22]);
+
+    // we moved from 5, 2 to 15, 20. And 5, 2 was our pivot.
+    expect([allNodes[2]!.x, allNodes[2]!.y]).toEqual([15, 20]);
+
+    currentPosition = path.getPosition();
+    expect([currentPosition.x, currentPosition.y]).toEqual([15, 20]);
+  });
 });

@@ -6,6 +6,8 @@ export class MouseComponent extends Component {
   private static currentMouse: MouseComponent;
   private images: HTMLImageElement[] = [];
 
+  public canvasPosition: Vector = new Vector(0, 0);
+
   constructor() {
     super();
 
@@ -18,22 +20,28 @@ export class MouseComponent extends Component {
     this.size = new Vector(10, 10);
     MouseComponent.currentMouse = this;
 
-    this.syncMousePosition();
+    this.syncMouseCanvasPosition();
   }
 
-  private syncMousePosition() {
+  private syncMouseCanvasPosition() {
     const viewport = Viewport.getCurrentViewport();
     viewport.canvas.addEventListener("mousemove", (domEvent) => {
-      const viewportPosition = viewport.getPosition();
-
       const rect = viewport.canvas.getBoundingClientRect();
-      const mouseCanvasPosition = new Vector(
-        domEvent.clientX - rect.left - viewportPosition.x,
-        domEvent.clientY - rect.top - viewportPosition.y
+      this.canvasPosition = new Vector(
+        (domEvent.clientX - rect.left) / viewport.getZoomLevel(),
+        (domEvent.clientY - rect.top) / viewport.getZoomLevel()
       );
-
-      this.setPosition(mouseCanvasPosition);
     });
+  }
+
+  private syncMousePositionWithViewport() {
+    const viewport = Viewport.getCurrentViewport();
+    this.setPosition(
+      new Vector(
+        this.canvasPosition.x + viewport.position.x,
+        this.canvasPosition.y + viewport.position.y
+      )
+    );
   }
 
   public setImage(imageSrc: string) {
@@ -83,17 +91,18 @@ export class MouseComponent extends Component {
 
   public draw(context: DrawContext): void {
     super.draw(context);
+    this.syncMousePositionWithViewport();
 
     this.drawLatestImage(context);
 
     // UNCOMMENT TO SEE DEBUG RENDER
-    // context.ctx.fillStyle = "red";
-    // context.ctx.fillRect(
-    //   this.position.x,
-    //   this.position.y,
-    //   this.size.x * this.scale,
-    //   this.size.y * this.scale
-    // );
+    context.ctx.fillStyle = "red";
+    context.ctx.fillRect(
+      this.position.x,
+      this.position.y,
+      this.size.x * this.scale,
+      this.size.y * this.scale
+    );
   }
 
   public static getCurrentMouse() {

@@ -56,8 +56,8 @@ export class PanController extends Controller {
 
     this.mainBoardComponent.setPosition(
       new Vector(
-        this.startPosition.x + moveChange.x,
-        this.startPosition.y + moveChange.y
+        this.startPosition.x - moveChange.x,
+        this.startPosition.y - moveChange.y
       )
     );
   }
@@ -76,10 +76,15 @@ export class PanController extends Controller {
       event.mouseCanvasPosition.y - this.mouseStartPosition.y
     );
 
+    console.log("MOUSE CHANGE: ");
+    console.log(moveChange);
+
+    console.log(this.startPosition);
+
     this.mainBoardComponent.setPosition(
       new Vector(
-        this.startPosition.x + moveChange.x,
-        this.startPosition.y + moveChange.y
+        this.startPosition.x - moveChange.x,
+        this.startPosition.y - moveChange.y
       )
     );
   }

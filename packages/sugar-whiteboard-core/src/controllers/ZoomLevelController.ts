@@ -24,13 +24,12 @@ export class ZoomLevelController extends Controller {
   private handleZoomInHotKey() {
     const viewport = Viewport.getCurrentViewport();
 
-    viewport.increaseZoomLevel(0.25);
+    viewport.increaseZoomLevel(0.1);
   }
 
   private handleZoomOutHotKey() {
     const viewport = Viewport.getCurrentViewport();
-    console.log("double !");
 
-    viewport.decreaseZoomLevel(0.25);
+    viewport.decreaseZoomLevel(0.1);
   }
 }
