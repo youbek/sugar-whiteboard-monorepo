@@ -2,6 +2,7 @@ import { SugarCanvasClientApp } from "sugar-canvas-ui";
 import { MainBoardComponent } from "./components";
 import { Context, DefaultContext } from "./contexts";
 import { UndoRedoContainer } from "./modules/UndoRedoContainer";
+import defaultCursorIcon from "./assets/icons/default.svg";
 
 export class Whiteboard {
   private currentContext: Context | null = null;
@@ -34,6 +35,7 @@ export class Whiteboard {
     new SugarCanvasClientApp({
       canvas,
       rootComponent: new MainBoardComponent(),
+      defaultCursorImage: defaultCursorIcon,
     });
 
     new UndoRedoContainer();

@@ -1,6 +1,12 @@
-import { KeyboardEvent, MouseEvent, Vector } from "sugar-canvas-ui";
+import {
+  KeyboardEvent,
+  MouseComponent,
+  MouseEvent,
+  Vector,
+} from "sugar-canvas-ui";
 import { Controller } from "./Controller";
 import { MainBoardComponent } from "../components";
+import grabIcon from "../assets/icons/grab.svg";
 
 export class PanController extends Controller {
   private isPanning: boolean = false;
@@ -40,7 +46,8 @@ export class PanController extends Controller {
       this.mouseStartPosition = event.mouseCanvasPosition;
       this.startPosition = this.mainBoardComponent.getPosition();
       this.isPanning = true;
-      document.body.style.cursor = "grabbing";
+
+      MouseComponent.getCurrentMouse().setImage(grabIcon);
     }, 100);
   }
 
@@ -76,17 +83,13 @@ export class PanController extends Controller {
       event.mouseCanvasPosition.y - this.mouseStartPosition.y
     );
 
-    console.log("MOUSE CHANGE: ");
-    console.log(moveChange);
-
-    console.log(this.startPosition);
-
     this.mainBoardComponent.setPosition(
       new Vector(
         this.startPosition.x - moveChange.x,
         this.startPosition.y - moveChange.y
       )
     );
+    MouseComponent.getCurrentMouse().removeImage(grabIcon);
   }
 
   private handlePenAltKeyPress(event: KeyboardEvent) {
@@ -143,5 +146,11 @@ export class PanController extends Controller {
         this.handlePanEnd.bind(this)
       )
     );
+  }
+
+  public unmount(): void {
+    super.unmount();
+
+    MouseComponent.getCurrentMouse().removeImage(grabIcon);
   }
 }

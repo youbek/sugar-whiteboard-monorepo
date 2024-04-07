@@ -41,6 +41,8 @@ export class SugarEngine {
     this.viewport.canvas.height = Math.floor(
       this.viewport.canvas.height * window.devicePixelRatio
     );
+
+    this.viewport.canvas.style.cursor = "none";
   }
 
   private draw({ prevFrameEndTime }: DrawOptions) {
@@ -77,6 +79,7 @@ export class SugarEngine {
     }
 
     for (const component of this.componentsTree.traverse()) {
+      if (!component.visible) continue;
       component.draw({
         ctx,
         viewport: this.viewport,

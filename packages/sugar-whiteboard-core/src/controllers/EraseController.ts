@@ -28,7 +28,6 @@ export class EraseController extends Controller {
 
     mouseComponent.setImage(eraseIcon);
     mouseComponent.size = this.eraseArea;
-    document.body.style.cursor = "none";
   }
 
   public cacheDrawingEraseChanges(component: DrawingComponent) {
@@ -167,7 +166,6 @@ export class EraseController extends Controller {
   public unmount(): void {
     super.unmount();
 
-    document.body.style.cursor = "default";
     MouseComponent.getCurrentMouse().removeImage(eraseIcon);
   }
 }

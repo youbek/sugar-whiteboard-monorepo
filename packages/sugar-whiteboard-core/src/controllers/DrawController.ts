@@ -1,4 +1,11 @@
-import { MouseEvent, Vector, DrawingComponent } from "sugar-canvas-ui";
+import {
+  MouseEvent,
+  Vector,
+  DrawingComponent,
+  MouseComponent,
+  MouseImagePivot,
+} from "sugar-canvas-ui";
+import penIcon from "../assets/icons/pen.svg";
 import { Controller } from "./Controller";
 
 export class DrawController extends Controller {
@@ -6,6 +13,10 @@ export class DrawController extends Controller {
 
   constructor() {
     super();
+
+    const mouseComponent = MouseComponent.getCurrentMouse();
+
+    mouseComponent.setImage(penIcon, MouseImagePivot.BOTTOM_LEFT);
   }
 
   public handleMouseDownEvent(event: MouseEvent): void {
@@ -73,5 +84,11 @@ export class DrawController extends Controller {
         this.handleMouseMoveEvent.bind(this)
       )
     );
+  }
+
+  public unmount(): void {
+    super.unmount();
+
+    MouseComponent.getCurrentMouse().removeImage(penIcon);
   }
 }

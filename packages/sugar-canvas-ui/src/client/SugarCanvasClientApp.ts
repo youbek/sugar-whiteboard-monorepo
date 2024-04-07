@@ -5,6 +5,7 @@ import { ComponentsTree, SugarEngine, Viewport } from "../rendering";
 type SugarCanvasAppConfig = {
   canvas: HTMLCanvasElement;
   rootComponent: Component;
+  defaultCursorImage: string;
 };
 
 export class SugarCanvasClientApp {
@@ -17,7 +18,9 @@ export class SugarCanvasClientApp {
 
     this.viewport = new Viewport(this.canvas);
     this.componentsTree = new ComponentsTree(config.rootComponent);
-    const mouseComponent = new MouseComponent();
+    const mouseComponent = new MouseComponent({
+      defaultCursorImage: config.defaultCursorImage,
+    });
     this.componentsTree.addComponent(mouseComponent);
 
     const inputEventsListener = new InputEventsListener({

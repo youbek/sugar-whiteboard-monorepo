@@ -55,7 +55,6 @@ export class Viewport {
 
   private setZoomLevelWithAnimation(newZoomLevel: number) {
     if (this.zoomLevelChangeAnimationId !== null) {
-      console.log("WHAT?");
       return; // ignore while animating
     }
 

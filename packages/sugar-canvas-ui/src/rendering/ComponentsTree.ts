@@ -33,6 +33,9 @@ export class ComponentsTree {
     let stack: Component[] = [this.root];
 
     while (stack.length) {
+      // TODO: Improve if possible or if necessary, sort the stack based on z-index before traversing
+      stack.sort((a, b) => a.zIndex - b.zIndex);
+
       const currentComponent = stack.shift();
 
       if (!currentComponent) break;

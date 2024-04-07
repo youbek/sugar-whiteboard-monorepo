@@ -23,8 +23,6 @@ export class DragController extends Controller {
       this.draggingComponent = event.target;
       this.draggingComponent.setMode(ComponentMode.SELECT);
 
-      document.body.style.cursor = "grabbing";
-
       this.dragOffset = new Vector(
         event.mouseRenderPosition.x - this.draggingComponent.getPosition().x,
         event.mouseRenderPosition.y - this.draggingComponent.getPosition().y
@@ -49,7 +47,6 @@ export class DragController extends Controller {
     clearTimeout(this.startWaitTimerId);
     this.draggingComponent.removeMode(ComponentMode.SELECT);
     this.draggingComponent = null;
-    document.body.style.cursor = "default";
   }
 
   public mount() {
