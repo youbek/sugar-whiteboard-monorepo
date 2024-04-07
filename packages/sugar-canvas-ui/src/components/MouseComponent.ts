@@ -28,8 +28,8 @@ export class MouseComponent extends Component {
     viewport.canvas.addEventListener("mousemove", (domEvent) => {
       const rect = viewport.canvas.getBoundingClientRect();
       this.canvasPosition = new Vector(
-        (domEvent.clientX - rect.left) / viewport.getZoomLevel(),
-        (domEvent.clientY - rect.top) / viewport.getZoomLevel()
+        (domEvent.clientX - rect.left) / viewport.zoomLevel,
+        (domEvent.clientY - rect.top) / viewport.zoomLevel
       );
     });
   }

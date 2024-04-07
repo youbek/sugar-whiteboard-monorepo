@@ -57,7 +57,7 @@ export class SugarEngine {
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform
      */
-    const zoomLevel = this.viewport.getZoomLevel();
+    const zoomLevel = this.viewport.zoomLevel * window.devicePixelRatio;
     ctx?.setTransform({
       a: zoomLevel,
       b: 0,

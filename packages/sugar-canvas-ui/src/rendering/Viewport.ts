@@ -18,7 +18,7 @@ export class Viewport {
 
   public maxSize = new Vector(13824, 8936);
 
-  private zoomLevel: number;
+  public zoomLevel: number;
   private zoomLevelChangeSpeed = 120; // 0.12 seconds
   private zoomLevelChangeAnimationId: number | null = null;
 
@@ -86,8 +86,8 @@ export class Viewport {
         );
 
         const newSize = new Vector(
-          this.canvas.width / this.getZoomLevel(),
-          this.canvas.height / this.getZoomLevel()
+          this.canvas.width / (this.zoomLevel * window.devicePixelRatio),
+          this.canvas.height / (this.zoomLevel * window.devicePixelRatio)
         );
         const newCenter = new Vector(
           this.position.x + newSize.x / 2,
@@ -111,10 +111,6 @@ export class Viewport {
 
         if (elapsedTime >= this.zoomLevelChangeSpeed) {
           cancelAnimationFrame(animationId);
-          console.log("ANIMATION FINISHED: ");
-          console.log("CURRENT ZOOM LEVEL: ", this.zoomLevel);
-          console.log("TARGET ZOOM LEVEL WAS: ", newZoomLevel);
-          console.log("AND T WAS: ", t);
           this.zoomLevelChangeAnimationId = null;
         } else {
           requestAnimation();
@@ -141,8 +137,8 @@ export class Viewport {
   // Aka window size
   public get size(): Vector {
     return new Vector(
-      this.canvas.width / this.getZoomLevel(),
-      this.canvas.height / this.getZoomLevel()
+      this.canvas.width / (this.zoomLevel * window.devicePixelRatio),
+      this.canvas.height / (this.zoomLevel * window.devicePixelRatio)
     );
   }
 
@@ -199,10 +195,6 @@ export class Viewport {
 
   public decreaseZoomLevel = (zoomLevelChange: number) => {
     this.setZoomLevelWithAnimation(this.zoomLevel - zoomLevelChange);
-  };
-
-  public getZoomLevel = () => {
-    return this.zoomLevel * window.devicePixelRatio;
   };
 
   public static getCurrentViewport() {

@@ -68,11 +68,7 @@ export class DrawingComponent extends RectComponent {
   }
 
   public removePathNodes(position: Vector, area: Vector) {
-    const localPosition = new Vector(
-      position.x - this.position.x,
-      position.y - this.position.y
-    );
-    const newPath = this.path.remove(localPosition, area);
+    const newPath = this.path.remove(position, area);
 
     this.path = newPath;
     this.recalculatePosition();
