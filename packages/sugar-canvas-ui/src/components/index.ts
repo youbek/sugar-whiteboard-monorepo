@@ -3,3 +3,4 @@ export * from "./RectComponent";
 export * from "./MouseComponent";
 export * from "./TextComponent";
 export * from "./DrawingComponent";
+export * from "./ImageComponent";

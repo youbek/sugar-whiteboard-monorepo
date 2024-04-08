@@ -132,7 +132,7 @@ export abstract class Component {
     return this.componentModes[this.componentModes.length - 1];
   }
 
-  public drawBorders(context: DrawContext) {
+  public drawControlBorders(context: DrawContext) {
     const position = new Vector(this.boundary.left, this.boundary.top);
 
     context.ctx.strokeStyle = this.selectModeBoundaryColor.toString();
@@ -144,7 +144,7 @@ export abstract class Component {
       this.mode === ComponentMode.SELECT ||
       this.mode === ComponentMode.EDIT
     ) {
-      this.drawBorders(context);
+      this.drawControlBorders(context);
     }
 
     if (this.showDebugInfo) {
