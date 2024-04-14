@@ -26,6 +26,8 @@ export class TextContext extends Context {
     if (
       this.controllers.some((controller) => controller === unmountingController)
     ) {
+      // TODO: Probably 2 way data binding/reference is a bad idea. Controllers should not be aware of whiteboard object they are associated with
+      // Possible solution: If whiteboard doesn't have context, automatically set the context to the default context, but do it in the Whiteboard class itself
       this.whiteboard.setContext(DefaultContext);
     }
   }

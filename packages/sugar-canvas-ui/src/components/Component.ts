@@ -1,5 +1,5 @@
 import { uid } from "uid";
-import { Color, Vector } from "../atoms";
+import { Vector } from "../atoms";
 import { Viewport } from "../rendering/Viewport";
 import { CollisionEngine } from "../physics/CollisionEngine";
 import { MouseEvent, KeyboardEvent } from "../events";
@@ -37,7 +37,6 @@ export abstract class Component {
   public visible: boolean = true;
   public zIndex: number = 0;
   public showDebugInfo: boolean = false;
-  public selectModeBoundaryColor = new Color(66, 195, 255, 1);
 
   public children: Component[] = [];
 
@@ -132,21 +131,7 @@ export abstract class Component {
     return this.componentModes[this.componentModes.length - 1];
   }
 
-  public drawControlBorders(context: DrawContext) {
-    const position = new Vector(this.boundary.left, this.boundary.top);
-
-    context.ctx.strokeStyle = this.selectModeBoundaryColor.toString();
-    context.ctx.strokeRect(position.x, position.y, this.size.x, this.size.y);
-  }
-
   public draw(context: DrawContext): void {
-    if (
-      this.mode === ComponentMode.SELECT ||
-      this.mode === ComponentMode.EDIT
-    ) {
-      this.drawControlBorders(context);
-    }
-
     if (this.showDebugInfo) {
       for (let i = 0; i < this.vertices.length; i++) {
         const start = this.vertices[i];

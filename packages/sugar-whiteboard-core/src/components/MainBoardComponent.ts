@@ -89,8 +89,6 @@ export class MainBoardComponent extends Component {
     this.drawBackground(context);
     this.drawGrid(context);
 
-    this.drawControlBorders(context);
-
     super.draw(context);
   }
 }

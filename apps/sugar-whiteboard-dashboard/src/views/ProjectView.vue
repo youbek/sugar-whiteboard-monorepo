@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import WhiteboardComponent from '@/components/WhiteboardComponent.vue';
+  import WhiteboardComponent from '@/components/Whiteboard/WhiteboardComponent.vue';
 </script>
 
 <template>
